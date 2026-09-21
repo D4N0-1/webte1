@@ -1,0 +1,42 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #eeeeee;
+    margin: 0;
+}
+
+header {
+    background-color: #333333;
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+main {
+    width: 80%;
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+section {
+    background-color: white;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+img {
+    width: 300px;
+    max-width: 100%;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+}
+@font-face {
+    font-family: "MojFont";
+    src: url("font.otf") format("truetype");
+}
+h1 {
+    font-family: "MojFont", sans-serif;
+}
