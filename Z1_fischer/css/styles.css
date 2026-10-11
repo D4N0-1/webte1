@@ -33,14 +33,38 @@ main {
 
 /* Header Component */
 header {
-  display: flex; align-items: center; justify-content: space-between; width: 100%;
-  padding: var(--space) calc(var(--space) * 2);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space) * 1.5);
+  width: 100%;
+  padding: calc(var(--space) * 1.5) calc(var(--space) * 2);
   background: linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary));
-
-  & img { width: 80px; height: 80px; flex-shrink: 0; object-fit: cover; border-radius: 50%; border: 2px solid var(--color-accent); }
-  & .header-text { display: flex; flex-direction: column; align-items: center; flex: 1; gap: calc(var(--space) * 0.25); text-align: center; }
-  & h1 { font-size: 3rem; font-weight: 700; margin: 0; }
-  & h2 { font-size: 1.5rem; font-weight: 400; color: var(--color-accent); margin: 0; }
+  border-bottom: 1px solid var(--color-border-light);
+  & img {
+    width: 72px;
+    height: 72px;
+  }
+  & .header-text {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--space) * 0.2);
+    text-align: left;
+  }
+  & h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  & h2 {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--color-accent);
+    margin: 0;
+    opacity: 0.95;
+    letter-spacing: 0.01em;
+  }
 }
 
 /* Navigation Component */
