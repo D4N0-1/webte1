@@ -1,5 +1,16 @@
 const SEMESTER_START = new Date('2026-09-14T00:00:00');
 const SEMESTER_END = new Date('2027-02-13T23:59:59');
+const STORAGE_KEY = 'portfolio_user_points';
+
+/* Helper functions */
+const timeToMinutes = (timeStr) => {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + m;
+};
+
+const toggleDisplay = (element, show, displayStyle = 'block') => {
+  if (element) element.style.display = show ? displayStyle : 'none';
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Mobile Hamburger Menu
@@ -65,9 +76,7 @@ function initScheduleFilter() {
         }
       });
 
-      if (emptyMessage) {
-        emptyMessage.style.display = (filter !== 'all' && visibleCount === 0) ? 'block' : 'none';
-      }
+      toggleDisplay(emptyMessage, filter !== 'all' && visibleCount === 0);
     });
   });
 }
@@ -82,14 +91,12 @@ function updateCurrentClassAndStatus() {
   const dayMap = { 1: 'Pondelok', 2: 'Utorok', 3: 'Streda', 4: 'Štvrtok', 5: 'Piatok' };
 
   let activeFound = false;
-  let upcoming = [];
+  const upcoming = [];
 
   document.querySelectorAll('.schedule-table td.slot[data-start]').forEach(slot => {
     const slotDay = parseInt(slot.closest('tr').getAttribute('data-day'), 10);
-    const [sH, sM] = slot.getAttribute('data-start').split(':').map(Number);
-    const [eH, eM] = slot.getAttribute('data-end').split(':').map(Number);
-    const startTotal = sH * 60 + sM;
-    const endTotal = eH * 60 + eM;
+    const startTotal = timeToMinutes(slot.getAttribute('data-start'));
+    const endTotal = timeToMinutes(slot.getAttribute('data-end'));
 
     if (slotDay === currentDay && currentMinutes >= startTotal && currentMinutes < endTotal) {
       slot.classList.add('active-now');
@@ -124,16 +131,17 @@ function updateSemesterProgress() {
   if (!progressBarFill || !progressPercentage) return;
 
   const now = new Date();
-  let pct = Math.max(0, Math.min(100, ((now - SEMESTER_START) / (SEMESTER_END - SEMESTER_START)) * 100)).toFixed(1);
+  const pct = Math.max(0, Math.min(100, ((now - SEMESTER_START) / (SEMESTER_END - SEMESTER_START)) * 100)).toFixed(1);
   progressBarFill.style.width = `${pct}%`;
   progressPercentage.textContent = `${pct}%`;
 }
 
 function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+  const toRad = deg => deg * (Math.PI / 180);
   const R = 6371;
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*(Math.PI/180)) * Math.cos(lat2*(Math.PI/180)) * Math.sin(dLon/2)**2;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -153,50 +161,57 @@ function initMap() {
     L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(`<b>${loc.name}</b>`);
   });
 
-  let userMarkersGroup = L.layerGroup().addTo(map);
+  const userMarkersGroup = L.layerGroup().addTo(map);
   let activePolyline = null;
-  let userPoints = JSON.parse(localStorage.getItem('portfolio_user_points')) || [];
+  let userPoints = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
+  // Cached DOM elements
   const startSelect = document.getElementById('startPointSelect');
   const destSelect = document.getElementById('destinationSelect');
   const calcBtn = document.getElementById('calcRouteBtn');
   const pointsList = document.getElementById('pointsList');
+  const emptyListText = document.getElementById('emptyListText');
+  const clearAllPointsBtn = document.getElementById('clearAllPointsBtn');
+  const routeForm = document.getElementById('routeForm');
+  const routeResultCard = document.getElementById('routeResultCard');
+  const routeResultText = document.getElementById('routeResultText');
+  const clearRouteBtn = document.getElementById('clearRouteBtn');
 
-  function getPointByKey(key) {
+  const getPointByKey = (key) => {
     if (key.startsWith('fixed:')) return FIXED_LOCATIONS[key.replace('fixed:', '')];
     if (key.startsWith('user:')) return userPoints[parseInt(key.replace('user:', ''), 10)];
     return null;
-  }
+  };
 
-  function render() {
+  const render = () => {
     userMarkersGroup.clearLayers();
     pointsList.innerHTML = '';
 
     startSelect.innerHTML = '<option value="" disabled selected>-- Vyberte štartovací bod --</option>';
     destSelect.innerHTML = '<option value="" disabled selected>-- Vyberte cieľový bod --</option>';
 
-    const appendGroup = (label, isUser = false) => {
+    const appendGroup = (label, items) => {
       const gStart = document.createElement('optgroup');
       const gDest = document.createElement('optgroup');
       gStart.label = gDest.label = label;
 
-      const items = isUser ? userPoints : Object.keys(FIXED_LOCATIONS).map(k => ({ key: `fixed:${k}`, name: FIXED_LOCATIONS[k].name }));
-      items.forEach((item, idx) => {
-        const val = isUser ? `user:${idx}` : item.key;
-        gStart.appendChild(new Option(item.name, val));
-        gDest.appendChild(new Option(item.name, val));
+      items.forEach(item => {
+        gStart.appendChild(new Option(item.name, item.val));
+        gDest.appendChild(new Option(item.name, item.val));
       });
 
       startSelect.appendChild(gStart);
       destSelect.appendChild(gDest);
     };
 
-    appendGroup('Pevné miesta', false);
+    appendGroup('Pevné miesta', Object.keys(FIXED_LOCATIONS).map(k => ({ val: `fixed:${k}`, name: FIXED_LOCATIONS[k].name })));
 
-    if (userPoints.length > 0) {
-      appendGroup('Moje pridané body', true);
-      document.getElementById('emptyListText').style.display = 'none';
-      document.getElementById('clearAllPointsBtn').style.display = 'block';
+    const hasUserPoints = userPoints.length > 0;
+    toggleDisplay(emptyListText, !hasUserPoints);
+    toggleDisplay(clearAllPointsBtn, hasUserPoints);
+
+    if (hasUserPoints) {
+      appendGroup('Moje pridané body', userPoints.map((pt, idx) => ({ val: `user:${idx}`, name: pt.name })));
 
       userPoints.forEach((pt, idx) => {
         userMarkersGroup.addLayer(L.marker([pt.lat, pt.lng]).bindPopup(`<b>${pt.name}</b>`));
@@ -204,16 +219,13 @@ function initMap() {
         li.innerHTML = `<span><strong>${pt.name}</strong></span><button type="button" data-index="${idx}">✕</button>`;
         pointsList.appendChild(li);
       });
-    } else {
-      document.getElementById('emptyListText').style.display = 'block';
-      document.getElementById('clearAllPointsBtn').style.display = 'none';
     }
-  }
+  };
 
-  function save() {
-    localStorage.setItem('portfolio_user_points', JSON.stringify(userPoints));
+  const save = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(userPoints));
     render();
-  }
+  };
 
   map.on('click', (e) => {
     const name = prompt('Zadajte názov pre tento bod:');
@@ -230,15 +242,20 @@ function initMap() {
     }
   });
 
-  document.getElementById('clearAllPointsBtn').addEventListener('click', () => {
-    if (confirm('Vymazať všetky body?')) { userPoints = []; save(); }
+  clearAllPointsBtn.addEventListener('click', () => {
+    if (confirm('Vymazať všetky body?')) {
+      userPoints = [];
+      save();
+    }
   });
 
-  const checkState = () => calcBtn.disabled = !(startSelect.value && destSelect.value);
+  const checkState = () => {
+    calcBtn.disabled = !(startSelect.value && destSelect.value);
+  };
   startSelect.addEventListener('change', checkState);
   destSelect.addEventListener('change', checkState);
 
-  document.getElementById('routeForm').addEventListener('submit', (e) => {
+  routeForm.addEventListener('submit', (e) => {
     e.preventDefault();
     if (startSelect.value === destSelect.value) return alert('Štart a cieľ nemôžu byť rovnaké!');
 
@@ -251,13 +268,13 @@ function initMap() {
     activePolyline = L.polyline([[p1.lat, p1.lng], [p2.lat, p2.lng]], { color: '#38bdf8', weight: 4, dashArray: '8, 8' }).addTo(map);
     map.fitBounds(activePolyline.getBounds(), { padding: [40, 40] });
 
-    document.getElementById('routeResultText').innerHTML = `Vzdialenosť z <strong>${p1.name}</strong> do <strong>${p2.name}</strong> je <strong>${calculateHaversineDistance(p1.lat, p1.lng, p2.lat, p2.lng).toFixed(2)} km</strong>.`;
-    document.getElementById('routeResultCard').style.display = 'block';
+    routeResultText.innerHTML = `Vzdialenosť z <strong>${p1.name}</strong> do <strong>${p2.name}</strong> je <strong>${calculateHaversineDistance(p1.lat, p1.lng, p2.lat, p2.lng).toFixed(2)} km</strong>.`;
+    toggleDisplay(routeResultCard, true);
   });
 
-  document.getElementById('clearRouteBtn').addEventListener('click', () => {
+  clearRouteBtn.addEventListener('click', () => {
     if (activePolyline) map.removeLayer(activePolyline);
-    document.getElementById('routeResultCard').style.display = 'none';
+    toggleDisplay(routeResultCard, false);
   });
 
   render();
