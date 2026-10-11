@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil</title>
+    <meta name="description" content="Osobný profil Daniela Fischera, študenta aplikovanej informatiky na FEI STU so zameraním na C/C++, Python a strojové učenie.">
+
+    <meta property="og:title" content="Daniel Fischer - Profil">
+    <meta property="og:description" content="Študent aplikovanej informatiky FEI STU so zameraním na C/C++, Python, embedded systémy a strojové učenie.">
+    <meta property="og:image" content="img/me.png">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/script.js" defer></script>
+</head>
+<body>
+    <header>
+        <img src="img/img.svg" alt="Monogram" width="200" height="200">
+        <div class="header-text">
+            <h1>Daniel Fischer</h1>
+            <h2>študent aplikovanej informatiky, zaujíma ma programovanie</h2>
+        </div>
+    </header>
+
+    <nav class="navbar">
+        <button class="hamburger" id="hamburger" aria-label="Otvoriť menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="index.html" class="nav-link active">Profil</a></li>
+            <li><a href="pages/cv.html" class="nav-link">Životopis</a></li>
+            <li><a href="pages/workspace.html" class="nav-link">Pracovné prostredie</a></li>
+            <li><a href="pages/schedule.html" class="nav-link">Kedy ma zastihnete</a></li>
+            <li><a href="pages/map.html" class="nav-link">Kde ma nájdete</a></li>
+        </ul>
+    </nav>
+
+    <main class="profile-container">
+        <article class="profile-card clearfix">
+            <!-- Fotografia obtekajúca text vľavo s povinnými atribútmi -->
+            <img src="img/me.png" 
+                 alt="Fotografia Daniela Fischera" 
+                 width="260" 
+                 height="260" 
+                 loading="lazy" 
+                 class="profile-float-img">
+
+
+            <!-- 1. odstavec: Štúdium a zameranie -->
+            <h1>O mne</h1>
+            <p class="profile-lead">
+                Ako študent aplikovanej informatiky na FEI STU sa vo vývoji softvéru zameriavam predovšetkým na jazyky C a C++, ktoré dopĺňam vývojom v Pythone. Fascinuje ma svet nízkoúrovňového programovania a embedded systémov, kde spájam mikropočítače a mikrokontroléry s reálnym hardvérom, senzormi a automatizáciou.
+            </p>
+
+            <!-- 2. odstavec: Ciele a smerovanie -->
+            <p>
+                Vo svojom štúdiu a projektoch sa intenzívne venujem oblasťom strojového učenia a umelej inteligencie. Mojím cieľom je prepájať inteligentné algoritmické modely s hardvérovo obmedzenými mikropočítačmi (TinyML) a navrhovať tak výkonovo optimalizované, spoľahlivé systémy schopné spracovávať dáta priamo na zariadení v reálnom čase.
+            </p>
+
+            <!-- Typograficky zvýraznené motto -->
+            <blockquote class="profile-motto">
+                <p>„Nepoznám lepší zmysel života než zahynúť pri pokuse o niečo veľké a nemožné.“</p>
+                <cite>— Friedrich Nietzsche</cite>
+            </blockquote>
+
+            <!-- Nečíslovaný zoznam 3 kľúčových vecí / predmetov semestra -->
+            <div class="profile-key-section">
+                <h2>Kľúčové oblasti:</h2>
+                <ul class="key-list">
+                    <li><strong>Programovanie:</strong> Tvorba čistého, optimalizovaného a architektúrne premysleného kódu predovšetkým v jazykoch C, C++ a Python.</li>
+                    <li><strong>Strojové učenie:</strong> Návrh a aplikácia algoritmických modelov so zameraním na inteligentné spracovanie dát.</li>
+                    <li><strong>Programovanie mikroprocesorov:</strong> Nízkoúrovňový vývoj softvéru pre mikrokontroléry a embedded systémy s priamym riadením hardvéru a senzorov.</li>
+                </ul>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 Daniel Fischer, B-API-MSUS.</p>
+            <address class="footer-address">
+                <span>Email: <a href="mailto:xfischerd@stuba.sk">xfischerd@stuba.sk</a></span>
+                <span>Bratislava, Slovensko</span>
+            </address>
+        </div>
+    </footer>
+</body>
+</html>

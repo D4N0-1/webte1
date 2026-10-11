@@ -1,0 +1,33 @@
+@page {
+  size: A4 portrait;
+  margin: 0.8cm;
+}
+
+@media print {
+  header, nav, footer, .hamburger { display: none !important; }
+
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 10pt;
+    margin: 0;
+  }
+
+  .cv-main-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+
+  .cv-card {
+    display: grid !important;
+    grid-template-columns: 220px 1fr !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+
+  .cv-left-col { background-color: #f8fafc !important; border-right: 1px solid #cbd5e1 !important; }
+  .cv-right-col { background-color: #fff !important; }
+
+  .cv-profile-photo { width: 110px !important; height: 110px !important; border-color: #0284c7 !important; }
+  .cv-sidebar-block h3, .cv-section h2 { color: #0284c7 !important; border-bottom-color: #0284c7 !important; }
+  .cv-contact-address a, .timeline-date { color: #0284c7 !important; }
+  .timeline-item { border-left-color: #0284c7 !important; }
+}

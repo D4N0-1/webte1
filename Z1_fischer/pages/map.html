@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kde ma nájdete</title>
+
+    <meta name="description" content="Interaktívna mapa s výpočtom vzdialeností a lokalitou FEI STU a internátu.">
+    
+    <!-- Open Graph metadáta -->
+    <meta property="og:title" content="Daniel Fischer - Kde ma nájdete">
+    <meta property="og:description" content="Interaktívna mapa s možnosťou pridať vlastné body a vypočítať vzdialenosť.">
+    <meta property="og:image" content="../img/img.svg">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <link rel="stylesheet" href="../css/styles.css">
+    
+    <!-- Leaflet JS & Vlastný Script -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="../js/script.js" defer></script>
+</head>
+<body>
+    <header>
+        <img src="../img/img.svg" alt="Monogram" width="200" height="200" loading="lazy">
+        <div class="header-text">
+            <h1>Daniel Fischer</h1>
+            <h2>študent aplikovanej informatiky, zaujíma ma programovanie</h2>
+        </div>
+    </header>
+
+    <nav class="navbar">
+        <button class="hamburger" id="hamburger" aria-label="Otvoriť menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="../index.html" class="nav-link">Profil</a></li>
+            <li><a href="cv.html" class="nav-link">Životopis</a></li>
+            <li><a href="workspace.html" class="nav-link">Pracovné prostredie</a></li>
+            <li><a href="schedule.html" class="nav-link">Kedy ma zastihnete</a></li>
+            <li><a href="map.html" class="nav-link active">Kde ma nájdete</a></li>
+        </ul>
+    </nav>
+
+    <main class="map-page-container">
+        <h1>Interaktívna mapa a trasa</h1>
+
+        <!-- Prázdny stav / Návod pre používateľa -->
+        <div class="map-instructions" id="mapInstructions">
+            <span class="info-icon">💡</span>
+            <div>
+                <strong>Ako používať mapu:</strong>
+                <p>Kliknutím na ľubovoľné miesto v mape pridáte vlastný bod. Pridané body môžete neskôr vybrať zo zoznamu a vypočítať ich vzdušnú vzdialenosť.</p>
+            </div>
+        </div>
+
+        <div class="map-layout">
+            <!-- Ovládací panel -->
+            <aside class="map-controls">
+                <h2>Správa bodov a trás</h2>
+
+                <!-- Výber bodov a výpočet -->
+                <form id="routeForm" class="route-form">
+                    <div class="form-group">
+                        <label for="startPointSelect">Štartovací bod:</label>
+                        <select id="startPointSelect" required>
+                            <option value="" disabled selected>-- Vyberte štartovací bod --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="destinationSelect">Cieľový bod:</label>
+                        <select id="destinationSelect" required>
+                            <option value="" disabled selected>-- Vyberte cieľový bod --</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="calcRouteBtn" disabled>Vypočítať vzdialenosť</button>
+                </form>
+
+                <!-- Výstup výpočtu -->
+                <div class="route-result-card" id="routeResultCard" style="display: none;">
+                    <h3>Výsledok trasy</h3>
+                    <p id="routeResultText">-</p>
+                    <button type="button" class="btn-secondary" id="clearRouteBtn">Odstrániť spojnicu</button>
+                </div>
+
+                <!-- Zoznam pridaných bodov -->
+                <div class="custom-points-section">
+                    <h3>Moje pridané body</h3>
+                    <p class="empty-list-text" id="emptyListText">Zatiaľ ste nepridali žiadne body na mapu.</p>
+                    <ul class="points-list" id="pointsList"></ul>
+                    <button type="button" class="btn-danger" id="clearAllPointsBtn" style="display: none;">Vymazať všetky body</button>
+                </div>
+            </aside>
+
+            <!-- Samotná mapa -->
+            <div class="map-wrapper">
+                <div id="map" class="map-element"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 Daniel Fischer, B-API-MSUS.</p>
+            <address class="footer-address">
+                <span>Email: <a href="mailto:xfischerd@stuba.sk">xfischerd@stuba.sk</a></span>
+                <span>Bratislava, Slovensko</span>
+            </address>
+        </div>
+    </footer>
+</body>
+</html>

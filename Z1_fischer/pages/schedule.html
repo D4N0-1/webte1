@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kedy ma zastihnete</title>
+
+    <meta name="description" content="Rozvrh hodín a časová dostupnosť Daniela Fischera na FEI STU v zimnom semestri.">
+    
+    <meta property="og:title" content="Daniel Fischer – Rozvrh hodín">
+    <meta property="og:description" content="Prehľad rozvrhu prednášok, cvičení a aktuálnej dostupnosti na fakulte.">
+    <meta property="og:image" content="../img/img.svg">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="../js/script.js" defer></script>
+</head>
+<body>
+    <header>
+        <img src="../img/img.svg" alt="Monogram" width="200" height="200" loading="lazy">
+        <div class="header-text">
+            <h1>Daniel Fischer</h1>
+            <h2>študent aplikovanej informatiky, zaujíma ma programovanie</h2>
+        </div>
+    </header>
+
+    <nav class="navbar">
+        <button class="hamburger" id="hamburger" aria-label="Otvoriť menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="../index.html" class="nav-link">Profil</a></li>
+            <li><a href="cv.html" class="nav-link">Životopis</a></li>
+            <li><a href="workspace.html" class="nav-link">Pracovné prostredie</a></li>
+            <li><a href="schedule.html" class="nav-link active">Kedy ma zastihnete</a></li>
+            <li><a href="map.html" class="nav-link">Kde ma nájdete</a></li>
+        </ul>
+    </nav>
+
+    <main class="schedule-container">
+        <h1>Rozvrh hodín (7:00 – 21:00)</h1>
+
+        <div class="status-box" id="scheduleStatus" aria-live="polite">
+            <span class="status-icon">⏰</span>
+            <span id="statusText">Načítavam informácie o rozvrhu...</span>
+        </div>
+
+        <div class="filter-controls">
+            <h2 class="filter-label">Filter predmetov:</h2>
+            <button type="button" class="filter-btn active" data-filter="all">Všetko</button>
+            <button type="button" class="filter-btn" data-filter="lecture">Prednášky</button>
+            <button type="button" class="filter-btn" data-filter="exercise">Cvičenia</button>
+        </div>
+
+        <div class="filter-empty-message" id="filterEmptyMessage" style="display: none;">
+            ⚠️ Pre zvolený filter neboli nájdené žiadne hodiny.
+        </div>
+
+        <div class="table-responsive">
+            <table class="schedule-table" id="scheduleTable">
+                <thead>
+                    <tr>
+                        <th>Deň</th>
+                        <th>07:00</th>
+                        <th>08:00</th>
+                        <th>09:00</th>
+                        <th>10:00</th>
+                        <th>11:00</th>
+                        <th>12:00</th>
+                        <th>13:00</th>
+                        <th>14:00</th>
+                        <th>15:00</th>
+                        <th>16:00</th>
+                        <th>17:00</th>
+                        <th>18:00</th>
+                        <th>19:00</th>
+                        <th>20:00</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Pondelok (Day 1) -->
+                    <tr data-day="1">
+                        <td class="day-header">Pondelok</td>
+                        <td colspan="2" class="slot free" data-type="free">Voľno</td>
+                        <td colspan="2" class="slot exercise" data-type="exercise" data-start="09:00" data-end="11:00" data-name="Webové technológie 1">
+                            <strong>Webové technológie 1</strong><br>
+                        </td>
+                        <td colspan="2" class="slot free" data-type="free">Voľno</td>
+                        <td colspan="2" class="slot exercise" data-type="exercise" data-start="13:00" data-end="15:00" data-name="Operačné systémy" >
+                            <strong>Operačné systémy</strong><br>
+                        </td>
+                        <td colspan="2" class="slot lecture" data-type="lecture" data-start="15:00" data-end="17:00" data-name="Lineárna algebra 2">
+                            <strong>Lineárna algebra 2</strong><br>
+                        </td>
+                        <td colspan="4" class="slot free" data-type="free">Voľno</td>
+                    </tr>
+
+                    <!-- Utorok (Day 2 - Riadok 1) -->
+                    <tr data-day="2">
+                        <td class="day-header">Utorok</td>
+                        <td colspan="1" class="slot pe" data-type="pe" data-start="07:00" data-end="08:00" data-name="Telesná výchova 5">
+                            <strong>Telesná výchova 5</strong><br>
+                        </td>
+                        <td colspan="2" class="slot lecture" data-type="lecture" data-start="08:00" data-end="10:00" data-name="Analýza a zložitosť algoritmov">
+                            <strong>Analýza a zložitosť algoritmov</strong><br>
+                        </td>
+                        <td colspan="2" class="slot lecture" data-type="lecture" data-start="10:00" data-end="12:00" data-name="Webové technológie 1">
+                            <strong>Webové technológie 1</strong><br>
+                        </td>
+                        <td colspan="1" class="slot free" data-type="free">Voľno</td>
+                        <td colspan="2" class="slot lecture" data-type="lecture" data-start="13:00" data-end="15:00" data-name="Matematická štatistika">
+                            <strong>Matematická štatistika</strong><br>
+                        </td>
+                        <td colspan="6" class="slot free" data-type="free">Voľno</td>
+                    </tr>
+
+                    <!-- Streda (Day 3 - Riadok 1) -->
+                    <tr data-day="3">
+                        <td class="day-header">Streda</td>
+                        <td colspan="1" class="slot free" data-type="free">Voľno</td>
+                        <td colspan="2" class="slot lecture" data-type="lecture" data-start="08:00" data-end="10:00" data-name="Operačné systémy">
+                            <strong>Operačné systémy</strong><br>
+                        </td>
+                        <td colspan="2" class="slot lecture" data-type="lecture" data-start="10:00" data-end="12:00" data-name="Analýza a zložitosť algoritmov">
+                            <strong>Analýza a zložitosť algoritmov</strong><br>
+                        </td>
+                        <td colspan="1" class="slot free" data-type="free">Voľno</td>
+                        <td colspan="2" class="slot lecture" data-type="lecture" data-start="13:00" data-end="15:00" data-name="Webové technológie 1">
+                            <strong>Webové technológie 1</strong><br>
+                        </td>
+                        <td colspan="2" class="slot exercise" data-type="exercise" data-start="15:00" data-end="17:00" data-name="Matematická štatistika">
+                            <strong>Matematická štatistika</strong><br>
+                        </td>
+                        <td colspan="4" class="slot free" data-type="free">Voľno</td>
+                    </tr>
+
+                    <!-- Štvrtok (Day 4) -->
+                    <tr data-day="4">
+                        <td class="day-header">Štvrtok</td>
+                        <td colspan="7" class="slot free" data-type="free">Voľno</td>
+                        <td colspan="2" class="slot exercise" data-type="exercise" data-start="14:00" data-end="16:00" data-name="Bakalársky projekt">
+                            <strong>Bakalársky projekt</strong><br>
+                        </td>
+                        <td colspan="5" class="slot free" data-type="free">Voľno</td>
+                    </tr>
+
+                    <!-- Piatok (Day 5) -->
+                    <tr data-day="5">
+                        <td class="day-header">Piatok</td>
+                        <td colspan="2" class="slot free" data-type="free">Voľno</td>
+                        <td colspan="1" class="slot exercise" data-type="exercise" data-start="09:00" data-end="10:00" data-name="Analýza a zložitosť algoritmov">
+                            <strong>Analýza a zložitosť algoritmov</strong><br>
+                        </td>
+                        <td colspan="3" class="slot free" data-type="free">Voľno</td>
+                        <td colspan="2" class="slot exercise" data-type="exercise" data-start="13:00" data-end="15:00" data-name="Lineárna algebra 2">
+                            <strong>Lineárna algebra 2</strong><br>
+                        </td>
+                        <td colspan="6" class="slot free" data-type="free">Voľno</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Progress Bar uplynutého semestra -->
+        <div class="semester-progress-container">
+            <div class="progress-info">
+                <span>Priebeh zimného semestra</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 Daniel Fischer, B-API-MSUS.</p>
+            <address class="footer-address">
+                <span>Email: <a href="mailto:xfischerd@stuba.sk">xfischerd@stuba.sk</a></span>
+                <span>Bratislava, Slovensko</span>
+            </address>
+        </div>
+    </footer>
+</body>
+</html>

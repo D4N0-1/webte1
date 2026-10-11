@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Životopis</title>
+
+    <meta name="description" content="Profesijný životopis Daniela Fischera - prehľad vzdelania, počítačových zručností (C/C++, Python, ML) a kontaktných údajov.">
+    
+    <meta property="og:title" content="Daniel Fischer - Životopis">
+    <meta property="og:description" content="Životopis študenta aplikovanej informatiky na FEI STU. Vzdelanie, počítačové zručnosti a kontakt.">
+    <meta property="og:image" content="../img/me.png">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/print.css" media="print">
+    <script src="../js/script.js" defer></script>
+</head>
+<body>
+    <header>
+        <img src="../img/img.svg" alt="Monogram" width="200" height="200" loading="lazy">
+        <div class="header-text">
+            <h1>Daniel Fischer</h1>
+            <h2>študent aplikovanej informatiky, zaujíma ma programovanie</h2>
+        </div>
+    </header>
+
+    <nav class="navbar">
+        <button class="hamburger" id="hamburger" aria-label="Otvoriť menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="../index.html" class="nav-link">Profil</a></li>
+            <li><a href="cv.html" class="nav-link active">Životopis</a></li>
+            <li><a href="workspace.html" class="nav-link">Pracovné prostredie</a></li>
+            <li><a href="schedule.html" class="nav-link">Kedy ma zastihnete</a></li>
+            <li><a href="map.html" class="nav-link">Kde ma nájdete</a></li>
+        </ul>
+    </nav>
+
+    <main class="cv-main-container">
+        <div class="cv-card">
+            <!-- Ľavý stĺpec (Fotografia + Kontaktné informácie) -->
+            <aside class="cv-left-col">
+                <div class="cv-profile-photo-wrapper">
+                    <img src="../img/me.png" alt="Daniel Fischer" class="cv-profile-photo" loading="lazy">
+                </div>
+
+                <div class="cv-sidebar-block">
+                    <h1>Kontakt</h1>
+                    <address class="cv-contact-address">
+                        <div class="contact-item">
+                            <span class="contact-label">Email:</span>
+                            <a href="mailto:xfischerd@stuba.sk">xfischerd@stuba.sk</a>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-label">Telefón:</span>
+                            <a href="tel:+421900123456">+421 917 900 875</a>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-label">Lokalita:</span>
+                            <span>Bratislava, Slovensko</span>
+                        </div>
+                    </address>
+                </div>
+            </aside>
+
+            <!-- Pravý stĺpec (Vzdelanie + Zručnosti) -->
+            <div class="cv-right-col">
+                <div class="cv-section">
+                    <h2>Dosiahnuté vzdelanie</h2>
+                    <div class="cv-timeline">
+                        <article class="timeline-item">
+                            <span class="timeline-date">2024 – súčasnosť</span>
+                            <h3>Bakalárske štúdium – Aplikovaná informatika</h3>
+                            <p class="timeline-subtitle">Fakulta elektrotechniky a informatiky STU v Bratislave</p>
+                            <p>Zameral som sa na vývoj softvéru, databázové systémy, objektové programovanie a webové technológie.</p>
+                        </article>
+
+                        <article class="timeline-item">
+                            <span class="timeline-date">2020 – 2024</span>
+                            <h3>Stredná priemyselná škola Jozefa Murgaša v Banskej Bystrici</h3>
+                            <p class="timeline-subtitle">Odbor: Informačné a sieťové technológie</p>
+                            <p>Ukončené maturitnou skúškou. Základy počítačových sietí, elektrotechniky a programovania</p>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="cv-section">
+                    <h2>Počítačové zručnosti</h2>
+                    <ul class="skills-text-list">
+                        <li><strong>Frontend Web Development (HTML5 / CSS3 / JavaScript):</strong> Základy</li>
+                        <li><strong>Programovanie mikroprocesorov:</strong> Základy</li>
+                        <li><strong>C / C++ programovanie:</strong> Stredne pokročilý</li>
+                        <li><strong>Python programovanie:</strong> Stredne pokročilý</li>
+                        <li><strong>Strojové učenie:</strong> Stredne pokročilý</li>
+                    </ul>
+                </div>
+
+                <div class="cv-section">
+                    <h2>Jazykové zručnosti</h2>
+                    <ul class="languages-list">
+                        <li><strong>Slovenský jazyk:</strong> Materinský jazyk</li>
+                        <li><strong>Anglický jazyk:</strong> Pokročilý (B2 – aktívna komunikácia a odborná literatúra)</li>
+                        <li><strong>Nemecký jazyk:</strong> Mierne pokročilý (A2)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 Daniel Fischer, B-API-MSUS.</p>
+            <address class="footer-address">
+                <span>Email: <a href="mailto:xfischerd@stuba.sk">xfischerd@stuba.sk</a></span>
+                <span>Bratislava, Slovensko</span>
+            </address>
+        </div>
+    </footer>
+</body>
+</html>

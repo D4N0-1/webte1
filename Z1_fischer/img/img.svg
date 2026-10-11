@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="monogram-logo" aria-label="Monogram DF">
+  <!-- Outer Dark Blue Circle -->
+  <circle cx="50" cy="50" r="48" fill="#1a365d" />
+  
+  <!-- Light Blue Accent Ring -->
+  <circle cx="50" cy="50" r="43" fill="none" stroke="#63b3ed" stroke-width="2" stroke-dasharray="8 4" />
+  
+  <!-- DF Initials -->
+  <text x="50" y="64" font-size="40" font-family="'Segoe UI', Roboto, sans-serif" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="-1">DF</text>
+</svg>
