@@ -267,6 +267,16 @@ address {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    text-align: center;
+    padding: calc(var(--space) * 1.25) var(--space);
+    gap: var(--space);
+
+    & .header-text { text-align: center; }
+    & h1 { font-size: 1.75rem; }
+    & h2 { font-size: 0.95rem; }
+  }
   .navbar {
     display: flex; justify-content: center; padding: 0 var(--space);
     & .hamburger { display: flex; }
