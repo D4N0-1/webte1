@@ -7,7 +7,6 @@
 
     <meta name="description" content="Interaktívna mapa s výpočtom vzdialeností a lokalitou FEI STU a internátu.">
     
-    <!-- Open Graph metadáta -->
     <meta property="og:title" content="Daniel Fischer - Kde ma nájdete">
     <meta property="og:description" content="Interaktívna mapa s možnosťou pridať vlastné body a vypočítať vzdialenosť.">
     <meta property="og:image" content="../img/img.svg">
@@ -15,11 +14,9 @@
 
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
     
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
     <link rel="stylesheet" href="../css/styles.css">
     
-    <!-- Leaflet JS & Vlastný Script -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="../js/script.js" defer></script>
 </head>
@@ -51,7 +48,6 @@
     <main class="map-page-container">
         <h1>Interaktívna mapa a trasa</h1>
 
-        <!-- Prázdny stav / Návod pre používateľa -->
         <div class="map-instructions" id="mapInstructions">
             <span class="info-icon">💡</span>
             <div>
@@ -61,11 +57,9 @@
         </div>
 
         <div class="map-layout">
-            <!-- Ovládací panel -->
             <aside class="map-controls">
                 <h2>Správa bodov a trás</h2>
 
-                <!-- Výber bodov a výpočet -->
                 <form id="routeForm" class="route-form">
                     <div class="form-group">
                         <label for="startPointSelect">Štartovací bod:</label>
@@ -84,14 +78,12 @@
                     <button type="submit" class="btn-primary" id="calcRouteBtn" disabled>Vypočítať vzdialenosť</button>
                 </form>
 
-                <!-- Výstup výpočtu -->
                 <div class="route-result-card" id="routeResultCard" style="display: none;">
                     <h3>Výsledok trasy</h3>
                     <p id="routeResultText">-</p>
                     <button type="button" class="btn-secondary" id="clearRouteBtn">Odstrániť spojnicu</button>
                 </div>
 
-                <!-- Zoznam pridaných bodov -->
                 <div class="custom-points-section">
                     <h3>Moje pridané body</h3>
                     <p class="empty-list-text" id="emptyListText">Zatiaľ ste nepridali žiadne body na mapu.</p>
@@ -100,7 +92,6 @@
                 </div>
             </aside>
 
-            <!-- Samotná mapa -->
             <div class="map-wrapper">
                 <div id="map" class="map-element"></div>
             </div>

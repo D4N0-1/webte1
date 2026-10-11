@@ -159,7 +159,7 @@ address {
 
 .mobile-info-panel { display: none; max-width: 900px; margin: var(--space) auto 0 auto; padding: calc(var(--space) * 0.85) var(--space); border-color: var(--color-accent); height: 110px; overflow-y: auto; }
 
-/* Schedule Table */
+/* Schedule Page */
 .status-box { display: flex; align-items: center; gap: calc(var(--space) * 0.75); border-color: var(--color-accent); padding: calc(var(--space) * 0.85) var(--space); margin-bottom: calc(var(--space) * 1.5); }
 .filter-controls {
   display: flex; align-items: center; gap: var(--space); margin-bottom: var(--space);
@@ -202,7 +202,7 @@ address {
   }
 }
 
-/* Map Section */
+/* Map Page */
 .map-instructions { display: flex; align-items: flex-start; gap: var(--space); border-color: var(--color-accent); padding: var(--space); margin-bottom: calc(var(--space) * 1.5); }
 .map-layout { display: grid; grid-template-columns: 320px 1fr; gap: calc(var(--space) * 1.5); }
 .map-controls { padding: var(--space); display: flex; flex-direction: column; gap: calc(var(--space) * 1.25); }
