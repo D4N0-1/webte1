@@ -3,7 +3,7 @@
 * **Meno:** Daniel Fischer  
 * **Krúžok:** B-API-MSUS  
 * **Odkaz na školskom serveri:** [https://webte1.fei.stuba.sk/~xfischerd/Z1_fischer]
-* **Odkaz na GitHub repozitár:**
+* **Odkaz na GitHub repozitár:** [https://github.com/D4N0-1/webte1]
 
 ## O projekte
 Tento web slúži ako osobné portfólio študenta aplikovanej informatiky so zameraním na C/C++, Python a strojové učenie. Stránka obsahuje profil s kľúčovými oblasťami záujmu, prehľadný životopis, interaktívnu prehliadku pracovného prostredia s hotspotmi, filtrovateľný rozvrh hodín a interaktívnu mapu s výpočtom vzdušnej vzdialenosti. Celý web je plne responzívny, navrhnutý v jednotnom dizajnovom systéme a spĺňa sémantické štandardy HTML5.
