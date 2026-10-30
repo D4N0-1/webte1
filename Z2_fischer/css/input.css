@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@theme {
+    --font-sans: 'Inter', sans-serif;
+}
+
+/* Vlastné odlíšenie polievok a hlavných jedál */
+.dish-soup {
+    border-left: 3px solid #3b82f6;
+    background-color: #eff6ff;
+}
+
+.dish-main {
+    border-left: 3px solid #10b981;
+}

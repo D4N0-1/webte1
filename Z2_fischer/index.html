@@ -8,56 +8,135 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     
-    <!-- Tailwind CSS cez CDN (CSS Knižnica podľa podmienok zadania) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Konfigurácia Tailwindu pre použitie nášho lokálneho fontu Poppins
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- Vlastné štýly s @font-face -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Prekompilované Tailwind CSS a vlastné štýly z css/styles.css -->
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <header class="bg-blue-700 text-white shadow-md">
-        <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h1 class="text-2xl font-bold tracking-tight">Obedové menu v okolí fakulty</h1>
+    <!-- Hlavička a navigácia -->
+    <header class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <img src="favicon.svg" alt="Obedové menu logo" class="w-10 h-10 drop-shadow-md">
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Obedové menu v okolí fakulty</h1>
+                    <p class="text-xs text-blue-200">FEI STU v Bratislave</p>
+                </div>
+            </div>
             <nav>
-                <ul class="flex gap-6 font-medium">
-                    <li><a href="#menu-section" class="hover:underline">Denné menu</a></li>
-                    <li><a href="#about-section" class="hover:underline">O projekte</a></li>
+                <ul class="flex gap-4 font-medium text-sm">
+                    <li><a href="#menu-section" class="hover:bg-blue-600 px-3 py-2 rounded-md transition-colors">Denné menu</a></li>
+                    <li><a href="#about-section" class="hover:bg-blue-600 px-3 py-2 rounded-md transition-colors">O projekte</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
-        <section id="menu-section" class="mb-12">
-            <h2 class="text-xl font-semibold mb-2">Aktuálne menu pre <time datetime="2026-10-30" class="text-blue-600">dnešný deň</time></h2>
-            <p class="text-slate-600">Načítavam ponuku reštaurácií...</p>
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full space-y-8">
+
+        <!-- Sekcia Denného Menu -->
+        <section id="menu-section" class="space-y-6">
+            
+            <!-- Ovládací panel -->
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-slate-900">Vyberte si obedové menu</h2>
+                    <p class="text-sm text-slate-500">Zobrazenie pre: <time id="current-day-display" class="font-semibold text-blue-600">Dnes</time></p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <!-- Prepínač zdroja dát -->
+                    <label class="inline-flex items-center cursor-pointer text-xs font-medium text-slate-600 bg-slate-100 px-3 py-2 rounded-lg border border-slate-200">
+                        <input type="checkbox" id="data-source-toggle" class="sr-only peer">
+                        <span class="mr-2">Zdroj:</span>
+                        <span class="peer-checked:text-blue-600 font-semibold peer-checked:hidden">Živé proxy</span>
+                        <span class="peer-checked:text-emerald-600 font-semibold hidden peer-checked:inline">Lokálne súbory</span>
+                    </label>
+
+                    <!-- Tlačidlo Aktualizovať -->
+                    <button id="btn-refresh" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Aktualizovať menu
+                    </button>
+
+                    <!-- Tlačidlo Vymazať dáta -->
+                    <button id="btn-clear-cache" class="bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 text-sm font-medium px-3 py-2 rounded-lg border border-slate-200 transition-colors">
+                        Vymazať dáta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Prepínač dní (Tabs) -->
+            <div class="border-b border-slate-200 overflow-x-auto">
+                <nav class="flex gap-2 min-w-max pb-1" id="day-tabs">
+                    <button data-day="1" class="day-tab active border-b-2 border-blue-600 text-blue-600 font-semibold px-4 py-2 text-sm transition-colors">Pondelok</button>
+                    <button data-day="2" class="day-tab border-b-2 border-transparent text-slate-500 hover:text-slate-700 px-4 py-2 text-sm transition-colors">Utorok</button>
+                    <button data-day="3" class="day-tab border-b-2 border-transparent text-slate-500 hover:text-slate-700 px-4 py-2 text-sm transition-colors">Streda</button>
+                    <button data-day="4" class="day-tab border-b-2 border-transparent text-slate-500 hover:text-slate-700 px-4 py-2 text-sm transition-colors">Štvrtok</button>
+                    <button data-day="5" class="day-tab border-b-2 border-transparent text-slate-500 hover:text-slate-700 px-4 py-2 text-sm transition-colors">Piatok</button>
+                    <button data-day="all" class="day-tab border-b-2 border-transparent text-slate-500 hover:text-slate-700 px-4 py-2 text-sm font-medium bg-slate-100 rounded-t-md transition-colors">Celý týždeň</button>
+                </nav>
+            </div>
+
+            <!-- Filtre reštaurácií -->
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filtrovať reštaurácie:</span>
+                <div id="restaurant-filters" class="flex flex-wrap gap-2">
+                    <span class="text-xs text-slate-400 italic">Načítavam filtre...</span>
+                </div>
+            </div>
+
+            <!-- Indikátor načítavania -->
+            <div id="loading-indicator" class="hidden py-12 flex flex-col items-center justify-center space-y-3">
+                <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <p class="text-sm font-medium text-slate-600">Načítavam a spracovávam menu reštaurácií...</p>
+            </div>
+
+            <!-- Kontajner pre karty reštaurácií -->
+            <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Sem bude JS vkladať karty reštaurácií -->
+            </div>
+
         </section>
 
-        <section id="about-section" class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-            <h2 class="text-xl font-semibold mb-2">O projekte</h2>
-            <p class="text-slate-600">Tento projekt načítava a prehľadne zobrazuje denné menu z reštaurácií v okolí FEI STU.</p>
+        <!-- Sekcia O projekte -->
+        <section id="about-section" class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200 space-y-4">
+            <h2 class="text-2xl font-bold text-slate-900 border-b border-slate-100 pb-3">O projekte WEBTE1</h2>
+            
+            <p class="text-slate-600 leading-relaxed">
+                Tento webový projekt vznikol v rámci predmetu <strong>WEBTE1</strong> (ZS 2026/2027) na FEI STU v Bratislave. 
+                Slúži na asynchrónne sťahovanie, spracovanie a zobrazenie denných menu z vybraných reštaurácií v okolí fakulty.
+            </p>
+
+            <div class="space-y-3 pt-2">
+                <h3 class="text-lg font-semibold text-slate-800">Spracovávané reštaurácie</h3>
+                <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm">
+                    <li><strong class="text-slate-800">Reštaurácia 1:</strong> [Názov reštaurácie] &ndash; načítanie dennej ponuky z HTML štruktúry</li>
+                    <li><strong class="text-slate-800">Reštaurácia 2:</strong> [Názov reštaurácie] &ndash; spracovanie cez DOMParser</li>
+                    <li><strong class="text-slate-800">Reštaurácia 3:</strong> [Názov reštaurácie] &ndash; extrakcia cien a alergénov</li>
+                </ul>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <h3 class="text-lg font-semibold text-slate-800">Použité technológie a knižnice</h3>
+                <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm">
+                    <li><strong>HTML5 & Tailwind CSS CLI:</strong> Sémantická štruktúra a responzívny dizajn</li>
+                    <li><strong>Vanilla JavaScript (ES6+):</strong> Asynchrónne Fetch API, DOMParser, localStorage</li>
+                    <li><strong>RSMS Inter Font:</strong> Lokálne načítaný font cez @font-face (.woff2)</li>
+                </ul>
+            </div>
         </section>
+
     </main>
 
-    <footer class="bg-slate-800 text-slate-300 py-6 border-t border-slate-700">
-        <div class="max-w-6xl mx-auto px-4 text-center text-sm">
-            <p>&copy; 2026 WEBTE1 | Študentské zadanie č. 2</p>
+    <!-- Pätička -->
+    <footer class="bg-slate-800 text-slate-300 py-6 border-t border-slate-700 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 text-center text-sm space-y-2">
+            <p>&copy; 2026 FEI STU | B-WEBTE1 | Daniel Fischer | Študentské zadanie č. 2</p>
+            <p class="text-xs text-slate-400">Použité knižnice: Tailwind CSS</p>
         </div>
     </footer>
 
-    <script src="app.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
