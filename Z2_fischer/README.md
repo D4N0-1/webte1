@@ -12,15 +12,15 @@ V súlade s podmienkami zadania uvádzam použitie AI nástrojov pri vývoji:
 - **Google Gemini**: Použitý ako asistent na návrh štruktúry projektu, tvorbu DOMParser logiky, konzultáciu CSS layoutu a vysvetlenie princípov fungovania kódu pre obhajobu.
 
 ## Použité knižnice a licencie
-- **CSS Knižnica**: [Tailwind CSS v3 (CDN)][https://tailwindcss.com]
+- **CSS Knižnica**: Tailwind CSS v4.3.3 | MIT License | [https://tailwindcss.com]
 - **JS Knižnica**: [Bude doplnené po vybraní, napr. FontAwesome / jQuery]
-- **Font**: [Inter]
-  - **Licencia fontu**: [https://rsms.me/inter/] (SIL Open Font License 1.1).
+- **Font**: Inter | SIL Open Font License 1.1 | [https://rsms.me/inter/]
+- **Favicon/Logo**: CC0 License | [https://www.svgrepo.com/svg/186330/tray-plate]
 
 ## Štruktúra adresára
 - `index.html` - Hlavný HTML5 dokument
 - `favicon.ico` - Favicon ikona stránky
 - `css/styles.css` - Vlastné CSS štýly a prepojenie fontu
-- `script/app.js` - Hlavná JS logika aplikácie
+- `js/app.js` - Hlavná JS logika aplikácie
 - `fonts/` - Priečinok pre lokálne `.woff2` súbory fontu
 - `docs/` - Priečinok pre screenshoty/textové výpisy z W3C validátorov
