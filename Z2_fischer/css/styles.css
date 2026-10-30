@@ -1,0 +1,22 @@
+/* Lokálny font pripojený cez @font-face podľa požiadaviek zadania[cite: 1] */
+@font-face {
+  font-family: 'Inter';
+  src: url('../fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+
+:root {
+    --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+    --primary-color: #2563eb;
+    --text-color: #1f2937;
+    --bg-color: #f8fafc;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+}
