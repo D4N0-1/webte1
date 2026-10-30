@@ -4,38 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Obedové menu v okolí FEI STU | WEBTE1</title>
-    <!-- Favicon placeholder -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Tailwind CSS cez CDN (CSS Knižnica podľa podmienok zadania) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Konfigurácia Tailwindu pre použitie nášho lokálneho fontu Poppins
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Vlastné štýly s @font-face -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <header>
-        <h1>Obedové menu v okolí fakulty</h1>
-        <nav>
-            <ul>
-                <li><a href="#menu-section">Denné menu</a></li>
-                <li><a href="#about-section">O projekte</a></li>
-            </ul>
-        </nav>
+    <header class="bg-blue-700 text-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl font-bold tracking-tight">Obedové menu v okolí fakulty</h1>
+            <nav>
+                <ul class="flex gap-6 font-medium">
+                    <li><a href="#menu-section" class="hover:underline">Denné menu</a></li>
+                    <li><a href="#about-section" class="hover:underline">O projekte</a></li>
+                </ul>
+            </nav>
+        </div>
     </header>
 
-    <main>
-        <section id="menu-section">
-            <h2>Aktuálne menu pre <time datetime="2026-10-30">dnešný deň</time></h2>
-            <p>Načítavam ponuku reštaurácií...</p>
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+        <section id="menu-section" class="mb-12">
+            <h2 class="text-xl font-semibold mb-2">Aktuálne menu pre <time datetime="2026-10-30" class="text-blue-600">dnešný deň</time></h2>
+            <p class="text-slate-600">Načítavam ponuku reštaurácií...</p>
         </section>
 
-        <section id="about-section">
-            <h2>O projekte</h2>
-            <p>Tento projekt načítava a prehľadne zobrazuje denné menu z reštaurácií v okolí FEI STU.</p>
+        <section id="about-section" class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+            <h2 class="text-xl font-semibold mb-2">O projekte</h2>
+            <p class="text-slate-600">Tento projekt načítava a prehľadne zobrazuje denné menu z reštaurácií v okolí FEI STU.</p>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2026 WEBTE1 | Daniel Fischer | Zadanie č. 2</p>
+    <footer class="bg-slate-800 text-slate-300 py-6 border-t border-slate-700">
+        <div class="max-w-6xl mx-auto px-4 text-center text-sm">
+            <p>&copy; 2026 WEBTE1 | Študentské zadanie č. 2</p>
+        </div>
     </footer>
 
-    <script src="js/app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
