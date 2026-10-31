@@ -1,18 +1,18 @@
 /**
  * WEBTE1 - Zadanie č. 2: Obedové menu v okolí fakulty
  * Autor: Daniel Fischer
- * Výhradne client-side spracovanie bez JS frameworkov
+ * Client-side spracovanie menu s využitím knižnice jQuery v4.0
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+$(function () {
     initApp();
 });
 
 // Adresa CORS proxy servera (doplní sa po oznámení na cvičení)
 const PROXY_URL = ''; 
 
-// Kľúč pre ukladanie dát do localStorage
-const CACHE_KEY = 'webte1_menu_cache';
+// Kľúč keše pre automatické obnovenie dát v localStorage
+const CACHE_KEY = 'webte1_menu_cache_v13';
 
 // Konfigurácia reštaurácií
 const RESTAURANTS = [
@@ -53,34 +53,55 @@ const DAY_NAMES = {
 const state = {
     restaurantsData: [],
     useLocalData: true,
-    selectedDay: getInitialDay(), // 1 až 5 alebo 'all'
+    selectedDay: getInitialDay(),
     visibleRestaurants: new Set(RESTAURANTS.map(r => r.id))
 };
 
 /**
- * Zistí aktuálny deň v týždni (1 = Pondelok ... 5 = Piatok).
- * Cez víkend (So/Ne) vracia 1 (Pondelok).
+ * Vyčistenie alergénov od prebytočných čiarok, lomítok a medzier na konci/začiatku
  */
-function getInitialDay() {
-    const day = new Date().getDay(); // 0 = Nedeľa, 1 = Pondelok ... 6 = Sobota
-    if (day >= 1 && day <= 5) {
-        return day;
-    }
-    return 1; // Cez víkend predvolene Pondelok
+function cleanAllergens(raw) {
+    if (!raw) return '';
+    let str = String(raw).replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+    str = str.replace(/[,/\-\.\s]+$/g, '').replace(/^[,/\-\.\s]+/g, '').trim();
+    str = str.replace(/\s*,\s*/g, ', ').replace(/\s*\/\s*/g, ' / ');
+    return str;
 }
 
 /**
- * Hlavná inicializačná funkcia
+ * Pomocná funkcia pre jednotný formát cien v EUR na jednom riadku
  */
+function formatPrice(rawPrice, isSoup) {
+    if (!rawPrice) return isSoup ? 'V cene menu' : 'N/A';
+    
+    const str = String(rawPrice).replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (str.toLowerCase().includes('v cene')) {
+        return 'V cene menu';
+    }
+
+    const match = str.match(/(\d+[\.,]\d+|\d+)/);
+    if (match) {
+        const num = parseFloat(match[1].replace(',', '.'));
+        if (!isNaN(num) && num > 0) {
+            return num.toFixed(2).replace('.', ',') + ' EUR';
+        }
+    }
+
+    return isSoup ? 'V cene menu' : 'N/A';
+}
+
+function getInitialDay() {
+    const day = new Date().getDay();
+    if (day >= 1 && day <= 5) return day;
+    return 1;
+}
+
 function initApp() {
     setupEventListeners();
     renderFiltersUI();
     updateTabsUI();
     
-    const sourceToggle = document.getElementById('data-source-toggle');
-    if (sourceToggle) {
-        sourceToggle.checked = state.useLocalData;
-    }
+    $('#data-source-toggle').prop('checked', state.useLocalData);
 
     const hasValidCache = loadFromCache();
     if (hasValidCache) {
@@ -90,16 +111,10 @@ function initApp() {
     }
 }
 
-/**
- * Vracia dnešný dátum vo formáte YYYY-MM-DD
- */
 function getTodayString() {
     return new Date().toISOString().split('T')[0];
 }
 
-/**
- * Načítanie dát z localStorage
- */
 function loadFromCache() {
     const cachedRaw = localStorage.getItem(CACHE_KEY);
     if (!cachedRaw) return false;
@@ -108,7 +123,6 @@ function loadFromCache() {
         const cached = JSON.parse(cachedRaw);
         if (cached.date === getTodayString() && Array.isArray(cached.restaurants) && cached.restaurants.length > 0) {
             state.restaurantsData = cached.restaurants;
-            console.log('Dáta boli načítané z localStorage.');
             return true;
         }
     } catch (e) {
@@ -117,9 +131,6 @@ function loadFromCache() {
     return false;
 }
 
-/**
- * Uloženie spracovaných dát do localStorage
- */
 function saveToCache(data) {
     const cacheObject = {
         date: getTodayString(),
@@ -127,111 +138,92 @@ function saveToCache(data) {
     };
     try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObject));
-        console.log('Dáta uložené do localStorage.');
     } catch (e) {
         console.warn('Chyba pri ukladaní do localStorage:', e);
     }
 }
 
-/**
- * Nastavenie poslucháčov udalostí UI
- */
 function setupEventListeners() {
-    const btnRefresh = document.getElementById('btn-refresh');
-    const btnClearCache = document.getElementById('btn-clear-cache');
-    const sourceToggle = document.getElementById('data-source-toggle');
-    const dayTabs = document.getElementById('day-tabs');
+    $('#btn-refresh').on('click', function () {
+        loadAllRestaurantsData(true);
+    });
 
-    if (btnRefresh) {
-        btnRefresh.addEventListener('click', () => loadAllRestaurantsData(true));
-    }
+    $('#btn-clear-cache').on('click', function () {
+        localStorage.removeItem(CACHE_KEY);
+        state.restaurantsData = [];
+        showLoading(false);
+        $('#menu-container').html('<p class="text-slate-500 text-center col-span-full py-8">Uložené dáta boli vymazané z localStorage. Kliknite na "Aktualizovať menu" pre nové načítanie.</p>');
+        alert('Uložené dáta boli vymazané z localStorage.');
+    });
 
-    if (btnClearCache) {
-        btnClearCache.addEventListener('click', () => {
-            localStorage.removeItem(CACHE_KEY);
-            state.restaurantsData = [];
-            showLoading(false);
-            const container = document.getElementById('menu-container');
-            if (container) {
-                container.innerHTML = '<p class="text-slate-500 text-center col-span-full py-8">Uložené dáta boli vymazané z localStorage. Kliknite na "Aktualizovať menu" pre nové načítanie.</p>';
-            }
-            alert('Uložené dáta boli vymazané z localStorage.');
-        });
-    }
+    $('#data-source-toggle').on('change', function () {
+        state.useLocalData = $(this).is(':checked');
+        loadAllRestaurantsData(true);
+    });
 
-    if (sourceToggle) {
-        sourceToggle.addEventListener('change', (e) => {
-            state.useLocalData = e.target.checked;
-            loadAllRestaurantsData(true);
-        });
-    }
-
-    // Prepínanie dní v týždni
-    if (dayTabs) {
-        dayTabs.addEventListener('click', (e) => {
-            const btn = e.target.closest('.day-tab');
-            if (!btn) return;
-
-            const dayVal = btn.dataset.day;
-            state.selectedDay = dayVal === 'all' ? 'all' : parseInt(dayVal, 10);
-            updateTabsUI();
-            renderMenuUI();
-        });
-    }
-}
-
-/**
- * Generovanie filtrov reštaurácií
- */
-function renderFiltersUI() {
-    const container = document.getElementById('restaurant-filters');
-    if (!container) return;
-
-    container.innerHTML = RESTAURANTS.map(r => `
-        <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 cursor-pointer hover:bg-slate-50 transition-colors">
-            <input type="checkbox" value="${r.id}" checked class="restaurant-filter-cb rounded text-blue-600 focus:ring-blue-500">
-            <span>${r.name}</span>
-        </label>
-    `).join('');
-
-    container.querySelectorAll('.restaurant-filter-cb').forEach(cb => {
-        cb.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                state.visibleRestaurants.add(e.target.value);
-            } else {
-                state.visibleRestaurants.delete(e.target.value);
-            }
-            renderMenuUI();
-        });
+    $('#day-tabs').on('click', '.day-tab', function () {
+        const dayVal = $(this).data('day');
+        state.selectedDay = dayVal === 'all' ? 'all' : parseInt(dayVal, 10);
+        updateTabsUI();
+        renderMenuUI();
     });
 }
 
-/**
- * Aktualizácia aktívnych záložiek dní
- */
-function updateTabsUI() {
-    const tabs = document.querySelectorAll('.day-tab');
-    const dayDisplay = document.getElementById('current-day-display');
+function renderFiltersUI() {
+    const $container = $('#restaurant-filters');
+    if (!$container.length) return;
 
-    tabs.forEach(tab => {
-        const val = tab.dataset.day;
+    let html = '';
+
+    RESTAURANTS.forEach(r => {
+        const isChecked = state.visibleRestaurants.has(r.id);
+        const activeClass = isChecked 
+            ? 'bg-blue-600 text-white font-semibold shadow-xs border-blue-600' 
+            : 'bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 border-slate-200';
+            
+        const checkIcon = isChecked ? '✓ ' : '';
+
+        html += `
+            <button data-id="${r.id}" class="restaurant-filter-btn px-3 py-1.5 rounded-lg border text-xs transition-all flex items-center gap-1.5 cursor-pointer ${activeClass}">
+                <span>${checkIcon}${r.name}</span>
+            </button>
+        `;
+    });
+
+    $container.html(html);
+
+    $container.find('.restaurant-filter-btn').on('click', function () {
+        const restId = $(this).data('id');
+        if (state.visibleRestaurants.has(restId)) {
+            if (state.visibleRestaurants.size > 1) {
+                state.visibleRestaurants.delete(restId);
+            } else {
+                alert('Musí ostať vybraná aspoň jedna reštaurácia.');
+                return;
+            }
+        } else {
+            state.visibleRestaurants.add(restId);
+        }
+        renderFiltersUI();
+        renderMenuUI();
+    });
+}
+
+function updateTabsUI() {
+    $('.day-tab').each(function () {
+        const val = $(this).data('day');
         const isSelected = (val === 'all' && state.selectedDay === 'all') || (parseInt(val, 10) === state.selectedDay);
 
         if (isSelected) {
-            tab.className = 'day-tab active border-b-2 border-blue-600 text-blue-600 font-semibold px-4 py-2 text-sm transition-colors';
+            $(this).attr('class', 'day-tab active border-b-2 border-blue-600 text-blue-600 font-semibold px-4 py-2 text-sm transition-colors');
         } else {
-            tab.className = 'day-tab border-b-2 border-transparent text-slate-500 hover:text-slate-700 px-4 py-2 text-sm transition-colors';
+            $(this).attr('class', 'day-tab border-b-2 border-transparent text-slate-500 hover:text-slate-700 px-4 py-2 text-sm transition-colors');
         }
     });
 
-    if (dayDisplay) {
-        dayDisplay.textContent = DAY_NAMES[state.selectedDay] || 'Dnes';
-    }
+    $('#current-day-display').text(DAY_NAMES[state.selectedDay] || 'Dnes');
 }
 
-/**
- * Načítanie dát zo všetkých reštaurácií
- */
 async function loadAllRestaurantsData(forceRefresh = false) {
     if (!forceRefresh && loadFromCache()) {
         renderMenuUI();
@@ -250,7 +242,7 @@ async function loadAllRestaurantsData(forceRefresh = false) {
                 id: restaurant.id,
                 name: restaurant.name,
                 url: restaurant.url,
-                lastUpdated: new Date().toLocaleString('sk-SK'),
+                lastUpdated: new Date().toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' }),
                 error: null,
                 menu: menuItems
             };
@@ -260,7 +252,7 @@ async function loadAllRestaurantsData(forceRefresh = false) {
                 id: restaurant.id,
                 name: restaurant.name,
                 url: restaurant.url,
-                lastUpdated: new Date().toLocaleString('sk-SK'),
+                lastUpdated: new Date().toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' }),
                 error: state.useLocalData 
                     ? 'Nepodarilo sa načítať lokálny HTML súbor.' 
                     : 'CORS proxy adresa nie je nastavená alebo je server nedostupný.',
@@ -275,64 +267,45 @@ async function loadAllRestaurantsData(forceRefresh = false) {
     renderMenuUI();
 }
 
-/**
- * Asynchrónne stiahnutie HTML
- */
-async function fetchRestaurantHtml(restaurant, useLocal) {
+function fetchRestaurantHtml(restaurant, useLocal) {
     if (!useLocal && !PROXY_URL) {
-        throw new Error('PROXY_URL nie je definovaná.');
+        return Promise.reject(new Error('PROXY_URL nie je definovaná.'));
     }
 
     const targetUrl = useLocal ? restaurant.localUrl : `${PROXY_URL}${restaurant.url}`;
-    const response = await fetch(targetUrl);
 
-    if (!response.ok) {
-        throw new Error(`HTTP chyba status: ${response.status}`);
-    }
-
-    return await response.text();
+    return $.ajax({
+        url: targetUrl,
+        method: 'GET',
+        dataType: 'html'
+    });
 }
 
-/**
- * Zobrazenie / skrytie spinnera
- */
 function showLoading(isLoading) {
-    const spinner = document.getElementById('loading-indicator');
-    const container = document.getElementById('menu-container');
-
-    if (spinner) {
-        if (isLoading) spinner.classList.remove('hidden');
-        else spinner.classList.add('hidden');
-    }
-
-    if (container && isLoading) {
-        container.innerHTML = '';
+    $('#loading-indicator').toggleClass('hidden', !isLoading);
+    if (isLoading) {
+        $('#menu-container').empty();
     }
 }
 
-/**
- * Main render function for restaurant menu cards
- */
 function renderMenuUI() {
-    const container = document.getElementById('menu-container');
-    if (!container) return;
+    const $container = $('#menu-container');
+    if (!$container.length) return;
 
-    // Filter by checked restaurant checkboxes
     const activeRestaurants = state.restaurantsData.filter(r => state.visibleRestaurants.has(r.id));
 
     if (activeRestaurants.length === 0) {
-        container.innerHTML = '<p class="text-slate-500 text-center col-span-full py-8">Žiadne reštaurácie nie sú zvolené vo filtri.</p>';
+        $container.html('<p class="text-slate-500 text-center col-span-full py-8">Žiadne reštaurácie nie sú zvolené vo filtri.</p>');
         return;
     }
 
-    container.innerHTML = activeRestaurants.map(restaurant => renderRestaurantCard(restaurant)).join('');
+    $container.html(activeRestaurants.map(restaurant => renderRestaurantCard(restaurant)).join(''));
 }
 
 /**
- * Vykreslenie karty pre jednu reštauráciu
+ * Vykreslenie karty reštaurácie so samostatným riadkom pre odznak polievky a názvom pod ním
  */
 function renderRestaurantCard(restaurant) {
-    // Ak nastala chyba pri sťahovaní
     if (restaurant.error) {
         return `
             <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
@@ -354,13 +327,11 @@ function renderRestaurantCard(restaurant) {
         `;
     }
 
-    // Filtrácia jedál podľa vybraného dňa
     let filteredMenu = restaurant.menu;
     if (state.selectedDay !== 'all') {
         filteredMenu = restaurant.menu.filter(item => item.day === state.selectedDay);
     }
 
-    // Ak pre daný deň chýba menu
     if (filteredMenu.length === 0) {
         return `
             <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
@@ -381,7 +352,6 @@ function renderRestaurantCard(restaurant) {
         `;
     }
 
-    // Zoskupenie jedál po dňoch (ak je zvolený "Celý týždeň")
     const groupedByDay = {};
     filteredMenu.forEach(item => {
         if (!groupedByDay[item.day]) groupedByDay[item.day] = [];
@@ -390,27 +360,47 @@ function renderRestaurantCard(restaurant) {
 
     const menuContentHtml = Object.keys(groupedByDay).map(dayKey => {
         const dayItems = groupedByDay[dayKey];
-        const dayTitle = state.selectedDay === 'all' ? `<h4 class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2 border-b pb-1">${DAY_NAMES[dayKey]}</h4>` : '';
+        const dayTitle = state.selectedDay === 'all' 
+            ? `<h4 class="text-xs font-bold text-blue-600 uppercase tracking-wider mt-3 mb-2 border-b border-slate-100 pb-1">${DAY_NAMES[dayKey]}</h4>` 
+            : '';
 
         const itemsHtml = dayItems.map(item => {
             const isSoup = item.type === 'soup';
-            const cardClass = isSoup ? 'dish-soup p-2.5 rounded-md my-1.5' : 'dish-main p-2.5 bg-slate-50 rounded-md my-1.5';
-            const badge = isSoup ? '<span class="text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded mr-1.5">Polievka</span>' : '';
+            
+            // Hrubšie obrysy (border-2) a odstup medzi kartami (my-3)
+            const cardClass = isSoup 
+                ? 'p-3.5 bg-blue-50/60 rounded-xl border-2 border-blue-200 border-l-4 border-l-blue-600 my-3 shadow-xs' 
+                : 'p-3.5 bg-slate-50 rounded-xl border-2 border-slate-200 border-l-4 border-l-emerald-500 my-3 shadow-xs';
+
+            let detailsParts = [];
+            if (item.weight) {
+                detailsParts.push(`<span class="font-medium text-slate-700">${item.weight}</span>`);
+            }
+            if (item.allergens) {
+                detailsParts.push(`<span>Alergény: ${item.allergens}</span>`);
+            }
+            const detailsHtml = detailsParts.join('<span class="text-slate-400 mx-2 font-bold">•</span>');
 
             return `
                 <div class="${cardClass} text-xs leading-relaxed">
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="font-medium text-slate-800">
-                            ${badge}${item.name}
+                    <div class="flex justify-between items-start gap-3">
+                        <div class="font-semibold text-slate-800 flex-grow">
+                            ${isSoup ? `
+                                <div class="mb-1.5">
+                                    <span class="inline-block whitespace-nowrap text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-md shadow-2xs select-none">🥣 Polievka</span>
+                                </div>
+                            ` : ''}
+                            <div class="leading-snug">${item.name}</div>
                         </div>
-                        <div class="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200 shadow-2xs whitespace-nowrap">
+                        <div class="font-bold text-slate-900 bg-white px-2.5 py-1 rounded border border-slate-200 shadow-2xs whitespace-nowrap shrink-0">
                             ${item.price}
                         </div>
                     </div>
-                    <div class="flex gap-2 text-[11px] text-slate-500 mt-1">
-                        ${item.weight ? `<span>${item.weight}</span>` : ''}
-                        ${item.allergens ? `<span>Alergény: ${item.allergens}</span>` : ''}
-                    </div>
+                    ${detailsParts.length > 0 ? `
+                        <div class="flex items-center text-[11px] text-slate-500 mt-2 pt-1.5 border-t border-slate-200/60">
+                            ${detailsHtml}
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }).join('');
@@ -430,7 +420,7 @@ function renderRestaurantCard(restaurant) {
                     <p class="text-xs text-slate-500 mt-1">Posledná aktualizácia: ${restaurant.lastUpdated}</p>
                 </div>
             </header>
-            <div class="p-4 flex-grow overflow-y-auto max-h-[500px]">
+            <div class="p-4 flex-grow overflow-y-auto max-h-[520px]">
                 ${menuContentHtml}
             </div>
         </article>
@@ -442,8 +432,8 @@ function renderRestaurantCard(restaurant) {
    ========================================================================== */
 
 function parseDrag(htmlString) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
+    const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+    const $html = $(doc.body);
     const menuItems = [];
 
     const daysMap = [
@@ -455,50 +445,64 @@ function parseDrag(htmlString) {
     ];
 
     daysMap.forEach(dayInfo => {
-        const pane = doc.querySelector(`#${dayInfo.id}`);
-        if (!pane) return;
+        const $pane = $html.find(`#${dayInfo.id}`);
+        if (!$pane.length) return;
 
-        const paneText = pane.textContent || '';
+        const paneText = $pane.text() || '';
         const soupMatch = paneText.match(/POLIEVKA[\s\S]*?(0,[\d]+\s*l[^\n<]+)/i);
         if (soupMatch && soupMatch[1]) {
             const rawSoup = soupMatch[1].trim();
             const allergensMatch = rawSoup.match(/\/([\d,]+)\//);
             const weightMatch = rawSoup.match(/^([\d,]+\s*l)/i);
 
+            let soupName = rawSoup;
+            if (weightMatch) soupName = soupName.replace(weightMatch[0], '');
+            if (allergensMatch) soupName = soupName.replace(allergensMatch[0], '');
+            soupName = soupName.replace(/HLAVNÉ JEDLO/gi, '').trim();
+
             menuItems.push({
                 day: dayInfo.num,
                 type: 'soup',
-                name: rawSoup.replace(weightMatch ? weightMatch[0] : '', '').replace(allergensMatch ? allergensMatch[0] : '', '').trim(),
-                price: 'V cene menu',
-                allergens: allergensMatch ? allergensMatch[1] : '',
-                weight: weightMatch ? weightMatch[1] : '0.3l'
+                name: soupName,
+                price: formatPrice('V cene menu', true),
+                allergens: cleanAllergens(allergensMatch ? allergensMatch[1] : ''),
+                weight: weightMatch ? weightMatch[1] : '0,3 l'
             });
         }
 
-        const rows = pane.querySelectorAll('table tr');
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('td');
-            if (cols.length < 2) return;
+        $pane.find('table tr').each(function () {
+            const $cols = $(this).find('td');
+            if ($cols.length < 2) return;
 
-            const nameCol = cols[0].textContent.trim();
-            const priceCol = cols[1].textContent.trim();
+            const nameCol = $cols.eq(0).text().trim();
+            const priceCol = $cols.eq(1).text().trim();
 
             if (!nameCol || nameCol.length < 3) return;
 
-            const weightMatch = nameCol.match(/^([\d\/\g\s]+)/i);
+            const weightMatch = nameCol.match(/^([\d/g\s\u00a0]+)(?=\s+[A-ZÁÄČĎÉÍĹĽŇÓÔRŔŠŤÚÝŽ])/i);
             const allergensMatch = nameCol.match(/\/([\d,]+)\//);
 
             let cleanName = nameCol;
-            if (weightMatch) cleanName = cleanName.replace(weightMatch[0], '');
-            if (allergensMatch) cleanName = cleanName.replace(allergensMatch[0], '');
+            let weightStr = '';
+
+            if (weightMatch) {
+                weightStr = weightMatch[1].replace(/\u00a0/g, '').trim();
+                cleanName = cleanName.substring(weightMatch[0].length).trim();
+            }
+
+            if (allergensMatch) {
+                cleanName = cleanName.replace(allergensMatch[0], '').trim();
+            }
+
+            cleanName = cleanName.replace(/^[/\s\u00a0]+/, '').replace(/\s+/g, ' ').trim();
 
             menuItems.push({
                 day: dayInfo.num,
                 type: 'main',
-                name: cleanName.trim(),
-                price: priceCol || 'N/A',
-                allergens: allergensMatch ? allergensMatch[1] : '',
-                weight: weightMatch ? weightMatch[1].trim() : ''
+                name: cleanName,
+                price: formatPrice(priceCol, false),
+                allergens: cleanAllergens(allergensMatch ? allergensMatch[1] : ''),
+                weight: weightStr
             });
         });
     });
@@ -507,8 +511,8 @@ function parseDrag(htmlString) {
 }
 
 function parseNaseHospoda(htmlString) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
+    const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+    const $html = $(doc.body);
     const menuItems = [];
 
     const dayNameMap = {
@@ -516,39 +520,41 @@ function parseNaseHospoda(htmlString) {
         'utorok': 2,
         'streda': 3,
         'štvrtok': 4,
-        'piatok': 5,
-        'sobota': 6,
-        'nedeľa': 7
+        'piatok': 5
     };
 
-    const articles = doc.querySelectorAll('#menu article');
-    articles.forEach(article => {
-        const dayHeader = article.querySelector('.tracking-wider')?.textContent.trim().toLowerCase();
-        const dateText = article.querySelector('.font-bold.text-white')?.textContent.trim() || '';
-        
+    $html.find('#menu article').each(function () {
+        const $article = $(this);
+        const dayHeader = $article.find('.tracking-wider').text().trim().toLowerCase();
+        const dateText = $article.find('.font-bold.text-white').text().trim() || '';
+
         const dayNum = dayNameMap[dayHeader];
-        if (!dayNum || dayNum > 5) return;
+        if (!dayNum) return;
 
-        const itemRows = article.querySelectorAll('.divide-y > div');
-        itemRows.forEach(row => {
-            const priceEl = row.querySelector('.shrink-0');
-            const mainCol = row.querySelector('.min-w-0');
-            if (!mainCol) return;
+        $article.find('.divide-y > div').each(function () {
+            const $row = $(this);
+            const $priceEl = $row.find('.shrink-0');
+            const $mainCol = $row.find('.min-w-0');
+            if (!$mainCol.length) return;
 
-            const titleEl = mainCol.querySelector('.font-bold.text-hospoda-cream');
-            const detailsEl = mainCol.querySelector('.mt-1');
+            const $titleEl = $mainCol.find('.font-bold');
+            const detailsText = $mainCol.find('.mt-1').text() || '';
 
-            if (!titleEl) return;
+            if (!$titleEl.length) return;
 
-            const weightSpan = titleEl.querySelector('.text-zinc-500, .text-hospoda-cream');
-            const weight = weightSpan ? weightSpan.textContent.trim() : '';
+            let fullTitle = $titleEl.text().replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
 
-            const titleClone = titleEl.cloneNode(true);
-            const spans = titleClone.querySelectorAll('span');
-            spans.forEach(s => s.remove());
-            const cleanName = titleClone.textContent.trim();
+            const weightMatch = fullTitle.match(/^(\d+\s*g|\d+[\.,]\d+\s*l)\s*/i);
+            let cleanName = fullTitle;
+            let weightStr = '';
 
-            const detailsText = detailsEl ? detailsEl.textContent : '';
+            if (weightMatch) {
+                weightStr = weightMatch[1].trim();
+                cleanName = fullTitle.substring(weightMatch[0].length).trim();
+            } else {
+                cleanName = cleanName.replace(/^\d+\.\s*/, '').trim();
+            }
+
             const isSoup = detailsText.includes('Polievka');
             const allergensMatch = detailsText.match(/Alergény:\s*([\d,]+)/i);
 
@@ -557,9 +563,9 @@ function parseNaseHospoda(htmlString) {
                 date: dateText,
                 type: isSoup ? 'soup' : 'main',
                 name: cleanName,
-                price: priceEl ? priceEl.textContent.trim() : 'N/A',
-                allergens: allergensMatch ? allergensMatch[1] : '',
-                weight: weight
+                price: formatPrice($priceEl.text(), isSoup),
+                allergens: cleanAllergens(allergensMatch ? allergensMatch[1] : ''),
+                weight: weightStr
             });
         });
     });
@@ -568,65 +574,110 @@ function parseNaseHospoda(htmlString) {
 }
 
 function parseRiviera(htmlString) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
+    const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+    const $html = $(doc.body);
     const menuItems = [];
 
-    const rawContainer = doc.querySelector('.raw-menu-content') || doc.body;
-    const paragraphs = rawContainer.querySelectorAll('p');
+    const daysMap = {
+        'PONDELOK': 1,
+        'UTOROK': 2,
+        'STREDA': 3,
+        'ŠTVRTOK': 4,
+        'PIATOK': 5
+    };
 
     let currentDay = null;
 
-    paragraphs.forEach(p => {
-        const text = p.textContent.trim();
+    $html.find('p').each(function () {
+        const $p = $(this);
+        const text = $p.text().trim();
+        if (!text) return;
 
-        if (text.includes('PONDELOK')) currentDay = 1;
-        else if (text.includes('UTOROK')) currentDay = 2;
-        else if (text.includes('STREDA')) currentDay = 3;
-        else if (text.includes('ŠTVRTOK')) currentDay = 4;
-        else if (text.includes('PIATOK')) currentDay = 5;
-
-        if (!currentDay) return;
-
-        const lines = p.innerHTML.split(/<br\s*\/?>/i);
-        lines.forEach(line => {
-            const tmpDiv = document.createElement('div');
-            tmpDiv.innerHTML = line;
-            const lineText = tmpDiv.textContent.trim();
-
-            if (!lineText || lineText.includes('PONDELOK') || lineText.includes('UTOROK') || lineText.includes('STREDA') || lineText.includes('ŠTVRTOK') || lineText.includes('PIATOK')) {
-                return;
+        let isDayHeader = false;
+        for (const [dayName, dayNum] of Object.entries(daysMap)) {
+            if (text.toUpperCase().includes(dayName) && text.length < 30) {
+                currentDay = dayNum;
+                isDayHeader = true;
+                break;
             }
+        }
 
-            const priceMatch = lineText.match(/(\d+[\.,]\d+\s*€)/);
-            const price = priceMatch ? priceMatch[1] : 'V cene menu';
+        if (isDayHeader || !currentDay) return;
 
-            const allergensMatch = lineText.match(/A([\d,]+)/i);
-            const allergens = allergensMatch ? allergensMatch[1] : '';
+        if (text.includes('podávame od') || text.includes('ALERGÉNY') || text.includes('Hmotnosť mäsa') || text.includes('TÝŽDENNÉ MENU')) {
+            return;
+        }
 
-            const weightMatch = lineText.match(/(\d+\s*g|\d+[\.,]\d+\s*l)/i);
-            const weight = weightMatch ? weightMatch[1] : '';
+        const rawLines = $p.html().split(/<br\s*\/?>/i);
+        const lines = [];
 
-            const isSoup = lineText.toLowerCase().includes('polievka') || weight.includes('l');
-
-            let cleanName = lineText
-                .replace(/(\d+[\.,]\d+\s*€)/g, '')
-                .replace(/A[\d,]+/gi, '')
-                .replace(/(\d+\s*g|\d+[\.,]\d+\s*l)/gi, '')
-                .replace(/[|]/g, '')
-                .trim();
-
-            if (cleanName.length > 3) {
-                menuItems.push({
-                    day: currentDay,
-                    type: isSoup ? 'soup' : 'main',
-                    name: cleanName,
-                    price: price,
-                    allergens: allergens,
-                    weight: weight
-                });
-            }
+        rawLines.forEach(rl => {
+            const tempDiv = doc.createElement('div');
+            tempDiv.innerHTML = rl;
+            const cleanText = tempDiv.textContent.trim();
+            if (cleanText) lines.push(cleanText);
         });
+
+        if (lines.length === 0) return;
+
+        const hasPrices = lines.some(l => /€|EUR/i.test(l));
+
+        if (!hasPrices) {
+            const soupName = lines[0];
+            let weight = '0,25 l';
+            let allergens = '';
+
+            if (lines.length > 1) {
+                const details = lines[1];
+                const weightMatch = details.match(/(\d+[\.,]\d+\s*l)/i);
+                if (weightMatch) weight = weightMatch[1];
+
+                const allergensMatch = details.match(/A([\d,\s/]+)/i);
+                if (allergensMatch) allergens = cleanAllergens(allergensMatch[1]);
+            }
+
+            menuItems.push({
+                day: currentDay,
+                type: 'soup',
+                name: soupName,
+                price: formatPrice('V cene menu', true),
+                weight: weight,
+                allergens: allergens
+            });
+        } else {
+            let i = 0;
+            while (i < lines.length) {
+                const line = lines[i];
+
+                if (/^\d+\.\s*/.test(line) || (!/€|EUR/i.test(line) && i + 1 < lines.length && /€|EUR/i.test(lines[i + 1]))) {
+                    const dishTitle = line.replace(/^\d+\.\s*/, '').trim();
+                    const detailLine = i + 1 < lines.length ? lines[i + 1] : '';
+                    i += 2;
+
+                    const priceMatch = detailLine.match(/(\d+[\.,]\d+|\d+)\s*(€|EUR)/i);
+                    const rawPrice = priceMatch ? priceMatch[1] : '';
+
+                    const weightMatch = detailLine.match(/(\d+\s*g|\d+[\.,]\d+\s*l)/i);
+                    const weight = weightMatch ? weightMatch[1] : '';
+
+                    const allergensMatch = detailLine.match(/A([\d,\s/]+)/i);
+                    const allergens = allergensMatch ? cleanAllergens(allergensMatch[1]) : '';
+
+                    if (dishTitle.length > 2) {
+                        menuItems.push({
+                            day: currentDay,
+                            type: 'main',
+                            name: dishTitle,
+                            price: formatPrice(rawPrice, false),
+                            weight: weight,
+                            allergens: allergens
+                        });
+                    }
+                } else {
+                    i++;
+                }
+            }
+        }
     });
 
     return menuItems;
