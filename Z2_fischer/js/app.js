@@ -1,14 +1,17 @@
 /**
  * WEBTE1 - Zadanie č. 2: Obedové menu v okolí fakulty
  * Autor: Daniel Fischer
- * Výhradne client-side spracovanie bez JS frameworkov (DOMParser)
+ * Výhradne client-side spracovanie bez JS frameworkov
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
-// Konfigurácia reštaurácií a ich lokálnych/vzdialených zdrojov
+// Adresa CORS proxy servera (oznámená na cvičení)
+const PROXY_URL = 'https://cors-proxy.example.com/'; // Sem sa vloží presná adresa proxy zo cvičenia
+
+// Konfigurácia reštaurácií
 const RESTAURANTS = [
     {
         id: 'drag',
@@ -33,39 +36,132 @@ const RESTAURANTS = [
     }
 ];
 
+// Globálny stav aplikácie
+const state = {
+    restaurantsData: [], // Pole spracovaných dát zo všetkých reštaurácií
+    useLocalData: false  // true = načítavať z data/*.html, false = načítavať cez CORS proxy
+};
+
 /**
  * Hlavná inicializačná funkcia
  */
 function initApp() {
     console.log('Aplikácia inicializovaná.');
     setupEventListeners();
+    loadAllRestaurantsData();
 }
 
 /**
- * Nastavenie poslucháčov udalostí UI
+ * Nastavenie poslucháčov udalostí pre UI
  */
 function setupEventListeners() {
     const btnRefresh = document.getElementById('btn-refresh');
     const btnClearCache = document.getElementById('btn-clear-cache');
+    const sourceToggle = document.getElementById('data-source-toggle');
 
     if (btnRefresh) {
         btnRefresh.addEventListener('click', () => {
-            console.log('Požiadavka na obnovenie menu...');
+            console.log('Obnovujem dáta reštaurácií...');
+            loadAllRestaurantsData();
         });
     }
 
     if (btnClearCache) {
         btnClearCache.addEventListener('click', () => {
             localStorage.clear();
+            state.restaurantsData = [];
             alert('Uložené dáta boli vymazané z localStorage.');
+            loadAllRestaurantsData();
+        });
+    }
+
+    if (sourceToggle) {
+        sourceToggle.addEventListener('change', (e) => {
+            state.useLocalData = e.target.checked;
+            console.log(`Zdroj dát zmenený na: ${state.useLocalData ? 'Lokálne súbory' : 'Živé proxy'}`);
+            loadAllRestaurantsData();
         });
     }
 }
 
 /**
- * PARSER 1: Reštaurácia DRAG (Drag.html)
- * Štruktúra: Bootstrap záložky (#pondelok, #utorok...), nadpisy POLIEVKA a tabuľky <table> pre hlavné jedlá.
+ * Načítanie a spracovanie dát zo všetkých reštaurácií
  */
+async function loadAllRestaurantsData() {
+    showLoading(true);
+    state.restaurantsData = [];
+
+    const fetchPromises = RESTAURANTS.map(async (restaurant) => {
+        try {
+            const htmlString = await fetchRestaurantHtml(restaurant, state.useLocalData);
+            const menuItems = restaurant.parse(htmlString);
+
+            return {
+                id: restaurant.id,
+                name: restaurant.name,
+                url: restaurant.url,
+                lastUpdated: new Date().toISOString(),
+                error: null,
+                menu: menuItems
+            };
+        } catch (error) {
+            console.error(`Chyba pri načítaní reštaurácie ${restaurant.name}:`, error);
+            // Chyba pri jednej reštaurácii nezablokuje ostatné
+            return {
+                id: restaurant.id,
+                name: restaurant.name,
+                url: restaurant.url,
+                lastUpdated: new Date().toISOString(),
+                error: 'Nepodarilo sa načítať denné menu reštaurácie.',
+                menu: []
+            };
+        }
+    });
+
+    state.restaurantsData = await Promise.all(fetchPromises);
+    showLoading(false);
+
+    console.log('Spracované dáta reštaurácií:', state.restaurantsData);
+}
+
+/**
+ * Asynchrónne stiahnutie HTML kódu konkrétnej reštaurácie cez Fetch API
+ */
+async function fetchRestaurantHtml(restaurant, useLocal) {
+    const targetUrl = useLocal 
+        ? restaurant.localUrl 
+        : `${PROXY_URL}${restaurant.url}`;
+
+    const response = await fetch(targetUrl);
+
+    if (!response.ok) {
+        throw new Error(`HTTP chyba status: ${response.status}`);
+    }
+
+    return await response.text();
+}
+
+/**
+ * Zobrazenie / skrytie indikátora načítavania
+ */
+function showLoading(isLoading) {
+    const spinner = document.getElementById('loading-indicator');
+    const container = document.getElementById('menu-container');
+
+    if (spinner) {
+        if (isLoading) spinner.classList.remove('hidden');
+        else spinner.classList.add('hidden');
+    }
+
+    if (container && isLoading) {
+        container.innerHTML = '';
+    }
+}
+
+/* ==========================================================================
+   PARSER LOGIKA (Drag, Naše Hospoda, Riviera)
+   ========================================================================== */
+
 function parseDrag(htmlString) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
@@ -83,7 +179,6 @@ function parseDrag(htmlString) {
         const pane = doc.querySelector(`#${dayInfo.id}`);
         if (!pane) return;
 
-        // 1. Extrakcia polievky
         const paneText = pane.textContent || '';
         const soupMatch = paneText.match(/POLIEVKA[\s\S]*?(0,[\d]+\s*l[^\n<]+)/i);
         if (soupMatch && soupMatch[1]) {
@@ -101,7 +196,6 @@ function parseDrag(htmlString) {
             });
         }
 
-        // 2. Extrakcia hlavných jedál z tabuľky
         const rows = pane.querySelectorAll('table tr');
         rows.forEach(row => {
             const cols = row.querySelectorAll('td');
@@ -133,10 +227,6 @@ function parseDrag(htmlString) {
     return menuItems;
 }
 
-/**
- * PARSER 2: Naše Hospoda Karloveská (Nase_hospoda.html)
- * Štruktúra: Tailwind HTML, karty <article> pre jednotlivé dni, zoznamy jedál s typom a alergénmi v spanoch.
- */
 function parseNaseHospoda(htmlString) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
@@ -158,7 +248,7 @@ function parseNaseHospoda(htmlString) {
         const dateText = article.querySelector('.font-bold.text-white')?.textContent.trim() || '';
         
         const dayNum = dayNameMap[dayHeader];
-        if (!dayNum || dayNum > 5) return; // Spracovávame pracovné dni (1-5)
+        if (!dayNum || dayNum > 5) return;
 
         const itemRows = article.querySelectorAll('.divide-y > div');
         itemRows.forEach(row => {
@@ -171,17 +261,14 @@ function parseNaseHospoda(htmlString) {
 
             if (!titleEl) return;
 
-            // Extrakcia hmotnosti/objemu
             const weightSpan = titleEl.querySelector('.text-zinc-500, .text-hospoda-cream');
             const weight = weightSpan ? weightSpan.textContent.trim() : '';
 
-            // Čistenie názvu jedla
             const titleClone = titleEl.cloneNode(true);
             const spans = titleClone.querySelectorAll('span');
             spans.forEach(s => s.remove());
             const cleanName = titleClone.textContent.trim();
 
-            // Typ (polievka/hlavné jedlo) a alergény
             const detailsText = detailsEl ? detailsEl.textContent : '';
             const isSoup = detailsText.includes('Polievka');
             const allergensMatch = detailsText.match(/Alergény:\s*([\d,]+)/i);
@@ -201,10 +288,6 @@ function parseNaseHospoda(htmlString) {
     return menuItems;
 }
 
-/**
- * PARSER 3: Reštaurácia Riviera (Riviera.html)
- * Štruktúra: WordPress/Elementor textový blok s odsekmi <p>, oddelenými dňami v <strong> tagoch a <br> riadkovaním.
- */
 function parseRiviera(htmlString) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
@@ -218,7 +301,6 @@ function parseRiviera(htmlString) {
     paragraphs.forEach(p => {
         const text = p.textContent.trim();
 
-        // Detekcia dňa v týždni
         if (text.includes('PONDELOK')) currentDay = 1;
         else if (text.includes('UTOROK')) currentDay = 2;
         else if (text.includes('STREDA')) currentDay = 3;
@@ -227,7 +309,6 @@ function parseRiviera(htmlString) {
 
         if (!currentDay) return;
 
-        // Rozdelenie odseku po riadkoch (<br>)
         const lines = p.innerHTML.split(/<br\s*\/?>/i);
         lines.forEach(line => {
             const tmpDiv = document.createElement('div');
@@ -238,22 +319,17 @@ function parseRiviera(htmlString) {
                 return;
             }
 
-            // Extrakcia ceny
             const priceMatch = lineText.match(/(\d+[\.,]\d+\s*€)/);
             const price = priceMatch ? priceMatch[1] : 'V cene menu';
 
-            // Extrakcia alergénov (napr. A1,7 alebo A1,3,9)
             const allergensMatch = lineText.match(/A([\d,]+)/i);
             const allergens = allergensMatch ? allergensMatch[1] : '';
 
-            // Extrakcia hmotnosti (napr. 120 g, 0,25 l)
             const weightMatch = lineText.match(/(\d+\s*g|\d+[\.,]\d+\s*l)/i);
             const weight = weightMatch ? weightMatch[1] : '';
 
-            // Detekcia či ide o polievku
             const isSoup = lineText.toLowerCase().includes('polievka') || weight.includes('l');
 
-            // Vyčistenie názvu jedla od doplnkových údajov
             let cleanName = lineText
                 .replace(/(\d+[\.,]\d+\s*€)/g, '')
                 .replace(/A[\d,]+/gi, '')
