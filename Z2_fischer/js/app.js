@@ -8,8 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
-// Adresa CORS proxy servera (oznámená na cvičení)
-const PROXY_URL = 'https://cors-proxy.example.com/'; // Sem sa vloží presná adresa proxy zo cvičenia
+// Adresa CORS proxy servera (doplní sa po oznámení na cvičení)
+const PROXY_URL = ''; 
+
+// Kľúč pre ukladanie dát do localStorage
+const CACHE_KEY = 'webte1_menu_cache';
 
 // Konfigurácia reštaurácií
 const RESTAURANTS = [
@@ -38,21 +41,75 @@ const RESTAURANTS = [
 
 // Globálny stav aplikácie
 const state = {
-    restaurantsData: [], // Pole spracovaných dát zo všetkých reštaurácií
-    useLocalData: false  // true = načítavať z data/*.html, false = načítavať cez CORS proxy
+    restaurantsData: [],
+    useLocalData: true // Predvolene nastavené na načítavanie z lokálnych HTML súborov
 };
 
 /**
  * Hlavná inicializačná funkcia
  */
 function initApp() {
-    console.log('Aplikácia inicializovaná.');
     setupEventListeners();
-    loadAllRestaurantsData();
+    
+    // Nastavenie prepínača v UI podľa predvoleného stavu
+    const sourceToggle = document.getElementById('data-source-toggle');
+    if (sourceToggle) {
+        sourceToggle.checked = state.useLocalData;
+    }
+
+    // Ak existujú platné dáta z dnešného dňa v localStorage, použijú sa bez nového network requestu
+    const hasValidCache = loadFromCache();
+    if (!hasValidCache) {
+        loadAllRestaurantsData();
+    }
 }
 
 /**
- * Nastavenie poslucháčov udalostí pre UI
+ * Vracia dnešný dátum vo formáte YYYY-MM-DD pre kontrolu keše
+ */
+function getTodayString() {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+}
+
+/**
+ * Načítanie dát z localStorage (ak pochádzajú z aktuálneho dňa)
+ */
+function loadFromCache() {
+    const cachedRaw = localStorage.getItem(CACHE_KEY);
+    if (!cachedRaw) return false;
+
+    try {
+        const cached = JSON.parse(cachedRaw);
+        if (cached.date === getTodayString() && Array.isArray(cached.restaurants) && cached.restaurants.length > 0) {
+            state.restaurantsData = cached.restaurants;
+            console.log('Dáta boli načítané z localStorage.');
+            return true;
+        }
+    } catch (e) {
+        console.warn('Chyba pri čítaní z localStorage:', e);
+    }
+    return false;
+}
+
+/**
+ * Uloženie spracovaných dát do localStorage
+ */
+function saveToCache(data) {
+    const cacheObject = {
+        date: getTodayString(),
+        restaurants: data
+    };
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObject));
+        console.log('Dáta boli uložené do localStorage.');
+    } catch (e) {
+        console.warn('Chyba pri ukladaní do localStorage:', e);
+    }
+}
+
+/**
+ * Nastavenie poslucháčov udalostí UI
  */
 function setupEventListeners() {
     const btnRefresh = document.getElementById('btn-refresh');
@@ -61,17 +118,21 @@ function setupEventListeners() {
 
     if (btnRefresh) {
         btnRefresh.addEventListener('click', () => {
-            console.log('Obnovujem dáta reštaurácií...');
-            loadAllRestaurantsData();
+            console.log('Vynútená aktualizácia menu...');
+            loadAllRestaurantsData(true);
         });
     }
 
     if (btnClearCache) {
         btnClearCache.addEventListener('click', () => {
-            localStorage.clear();
+            localStorage.removeItem(CACHE_KEY);
             state.restaurantsData = [];
+            showLoading(false);
+            const container = document.getElementById('menu-container');
+            if (container) {
+                container.innerHTML = '<p class="text-slate-500 text-center col-span-full py-8">Uložené dáta boli vymazané z localStorage. Kliknite na "Aktualizovať menu" pre nové načítanie.</p>';
+            }
             alert('Uložené dáta boli vymazané z localStorage.');
-            loadAllRestaurantsData();
         });
     }
 
@@ -79,7 +140,7 @@ function setupEventListeners() {
         sourceToggle.addEventListener('change', (e) => {
             state.useLocalData = e.target.checked;
             console.log(`Zdroj dát zmenený na: ${state.useLocalData ? 'Lokálne súbory' : 'Živé proxy'}`);
-            loadAllRestaurantsData();
+            loadAllRestaurantsData(true);
         });
     }
 }
@@ -87,7 +148,11 @@ function setupEventListeners() {
 /**
  * Načítanie a spracovanie dát zo všetkých reštaurácií
  */
-async function loadAllRestaurantsData() {
+async function loadAllRestaurantsData(forceRefresh = false) {
+    if (!forceRefresh && loadFromCache()) {
+        return;
+    }
+
     showLoading(true);
     state.restaurantsData = [];
 
@@ -100,34 +165,40 @@ async function loadAllRestaurantsData() {
                 id: restaurant.id,
                 name: restaurant.name,
                 url: restaurant.url,
-                lastUpdated: new Date().toISOString(),
+                lastUpdated: new Date().toLocaleString('sk-SK'),
                 error: null,
                 menu: menuItems
             };
         } catch (error) {
             console.error(`Chyba pri načítaní reštaurácie ${restaurant.name}:`, error);
-            // Chyba pri jednej reštaurácii nezablokuje ostatné
             return {
                 id: restaurant.id,
                 name: restaurant.name,
                 url: restaurant.url,
-                lastUpdated: new Date().toISOString(),
-                error: 'Nepodarilo sa načítať denné menu reštaurácie.',
+                lastUpdated: new Date().toLocaleString('sk-SK'),
+                error: state.useLocalData 
+                    ? 'Nepodarilo sa načítať lokálny HTML súbor.' 
+                    : 'CORS proxy adresa nie je nastavená alebo je server nedostupný.',
                 menu: []
             };
         }
     });
 
     state.restaurantsData = await Promise.all(fetchPromises);
+    saveToCache(state.restaurantsData);
     showLoading(false);
 
     console.log('Spracované dáta reštaurácií:', state.restaurantsData);
 }
 
 /**
- * Asynchrónne stiahnutie HTML kódu konkrétnej reštaurácie cez Fetch API
+ * Asynchrónne stiahnutie HTML kódu reštaurácie cez Fetch API
  */
 async function fetchRestaurantHtml(restaurant, useLocal) {
+    if (!useLocal && !PROXY_URL) {
+        throw new Error('PROXY_URL nie je definovaná.');
+    }
+
     const targetUrl = useLocal 
         ? restaurant.localUrl 
         : `${PROXY_URL}${restaurant.url}`;
