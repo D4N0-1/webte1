@@ -11,9 +11,9 @@ $(function () {
 const PROXY_URL = ''; 
 
 // Kľúč keše pre automatické obnovenie dát v localStorage
-const CACHE_KEY = 'webte1_menu_cache_v40';
+const CACHE_KEY = 'menu_cache';
 
-// Konfigurácia reštaurácií (Ostravarna Amélia nahradila Naše Hospoda)
+// Konfigurácia reštaurácií
 const RESTAURANTS = [
     {
         id: 'drag',
@@ -151,8 +151,8 @@ function setupEventListeners() {
         localStorage.removeItem(CACHE_KEY);
         state.restaurantsData = [];
         showLoading(false);
-        $('#menu-container').html('<p class="text-slate-500 text-center col-span-full py-8">Uložené dáta boli vymazané z localStorage. Kliknite na "Aktualizovať menu" pre nové načítanie.</p>');
-        alert('Uložené dáta boli vymazané z localStorage.');
+        $('#menu-container').html('<p class="text-slate-500 text-center col-span-full py-8">Uložené dáta boli vymazané z lokálneho úložiska. Kliknite na "Aktualizovať menu" pre nové načítanie.</p>');
+        alert('Uložené dáta boli vymazané z lokálneho úložiska.');
     });
 
     $('#data-source-toggle').off('change').on('change', function () {
@@ -307,8 +307,8 @@ function renderMenuUI() {
 function renderRestaurantCard(restaurant) {
     if (restaurant.error) {
         return `
-            <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                <header class="p-4 bg-slate-100 border-b border-slate-200">
+            <article class="bg-white rounded-2xl shadow-sm border-2 border-slate-300 overflow-hidden flex flex-col">
+                <header class="p-4 bg-slate-100 border-b-2 border-slate-300">
                     <h3 class="font-bold text-slate-900 text-lg">
                         <a href="${restaurant.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 transition-colors inline-flex items-center gap-1">
                             ${restaurant.name} ↗
@@ -317,7 +317,7 @@ function renderRestaurantCard(restaurant) {
                     <p class="text-xs text-slate-500 mt-1">Posledná aktualizácia: ${restaurant.lastUpdated}</p>
                 </header>
                 <div class="p-4 flex-grow flex items-center justify-center">
-                    <div class="bg-red-50 text-red-700 p-4 rounded-lg text-sm w-full border border-red-200">
+                    <div class="bg-red-50 text-red-700 p-4 rounded-xl text-sm w-full border-2 border-red-200">
                         <p class="font-semibold mb-1">Menu nie je dostupné</p>
                         <p class="text-xs text-red-600">${restaurant.error}</p>
                     </div>
@@ -333,8 +333,8 @@ function renderRestaurantCard(restaurant) {
 
     if (filteredMenu.length === 0) {
         return `
-            <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                <header class="p-4 bg-slate-100 border-b border-slate-200">
+            <article class="bg-white rounded-2xl shadow-sm border-2 border-slate-300 overflow-hidden flex flex-col">
+                <header class="p-4 bg-slate-100 border-b-2 border-slate-300">
                     <h3 class="font-bold text-slate-900 text-lg">
                         <a href="${restaurant.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 transition-colors inline-flex items-center gap-1">
                             ${restaurant.name} ↗
@@ -343,7 +343,7 @@ function renderRestaurantCard(restaurant) {
                     <p class="text-xs text-slate-500 mt-1">Posledná aktualizácia: ${restaurant.lastUpdated}</p>
                 </header>
                 <div class="p-6 flex-grow flex items-center justify-center">
-                    <p class="text-sm text-slate-500 italic bg-slate-50 p-3 rounded-lg border border-slate-200 w-full text-center">
+                    <p class="text-sm text-slate-500 italic bg-slate-50 p-3.5 rounded-xl border-2 border-slate-200 w-full text-center">
                         Menu na tento deň nie je k dispozícii.
                     </p>
                 </div>
@@ -360,42 +360,58 @@ function renderRestaurantCard(restaurant) {
     const menuContentHtml = Object.keys(groupedByDay).map(dayKey => {
         const dayItems = groupedByDay[dayKey];
         const dayTitle = state.selectedDay === 'all' 
-            ? `<h4 class="text-xs font-bold text-blue-600 uppercase tracking-wider mt-3 mb-2 border-b border-slate-100 pb-1">${DAY_NAMES[dayKey]}</h4>` 
+            ? `<h4 class="text-xs font-extrabold text-blue-600 uppercase tracking-wider mt-5 mb-3 border-b-2 border-slate-200 pb-1 flex items-center gap-1.5">
+                <span>📅</span> ${DAY_NAMES[dayKey]}
+               </h4>` 
             : '';
 
         const itemsHtml = dayItems.map(item => {
             const isSoup = item.type === 'soup';
             
             const cardClass = isSoup 
-                ? 'p-3.5 bg-blue-50/60 rounded-xl border-2 border-blue-200 border-l-4 border-l-blue-600 my-3 shadow-xs' 
-                : 'p-3.5 bg-slate-50 rounded-xl border-2 border-slate-200 border-l-4 border-l-emerald-500 my-3 shadow-xs';
+                ? 'p-4 bg-blue-50/70 rounded-xl border-2 border-blue-300 border-l-4 border-l-blue-600 my-4 shadow-xs hover:shadow-sm transition-shadow' 
+                : 'p-4 bg-slate-50/90 rounded-xl border-2 border-slate-300 border-l-4 border-l-emerald-500 my-4 shadow-xs hover:shadow-sm transition-shadow';
+
+            // Odznak POLIEVKA pre polievku, Odznak MENU pre hlavné jedlo
+            let badgeHtml = '';
+            if (isSoup) {
+                badgeHtml = `
+                    <div class="mb-2">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-md shadow-2xs select-none whitespace-nowrap">
+                            🥣 Polievka
+                        </span>
+                    </div>`;
+            } else {
+                badgeHtml = `
+                    <div class="mb-2">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wider bg-emerald-700 text-white px-2 py-0.5 rounded-md shadow-2xs select-none whitespace-nowrap">
+                            MENU
+                        </span>
+                    </div>`;
+            }
 
             let detailsParts = [];
             if (item.weight) {
-                detailsParts.push(`<span class="font-medium text-slate-700">${item.weight}</span>`);
+                detailsParts.push(`<span class="font-medium text-slate-700">⚖️ ${item.weight}</span>`);
             }
             if (item.allergens) {
-                detailsParts.push(`<span>Alergény: ${item.allergens}</span>`);
+                detailsParts.push(`<span>Alergény: <strong class="text-slate-700">${item.allergens}</strong></span>`);
             }
-            const detailsHtml = detailsParts.join('<span class="text-slate-400 mx-2 font-bold">•</span>');
+            const detailsHtml = detailsParts.join('<span class="text-slate-300 mx-2 font-bold">•</span>');
 
             return `
                 <div class="${cardClass} text-xs leading-relaxed">
                     <div class="flex justify-between items-start gap-3">
-                        <div class="font-semibold text-slate-800 flex-grow">
-                            ${isSoup ? `
-                                <div class="mb-1.5">
-                                    <span class="inline-block whitespace-nowrap text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-md shadow-2xs select-none">🥣 Polievka</span>
-                                </div>
-                            ` : ''}
-                            <div class="leading-snug">${item.name}</div>
+                        <div class="font-semibold text-slate-800 flex-1 min-w-0">
+                            ${badgeHtml}
+                            <div class="leading-snug text-[13px] text-slate-900 break-words">${item.name}</div>
                         </div>
-                        <div class="font-bold text-slate-900 bg-white px-2.5 py-1 rounded border border-slate-200 shadow-2xs whitespace-nowrap shrink-0">
+                        <div class="font-extrabold text-slate-900 bg-white px-2.5 py-1 rounded-lg border-2 border-slate-300 shadow-2xs text-xs whitespace-nowrap shrink-0 self-start">
                             ${item.price}
                         </div>
                     </div>
                     ${detailsParts.length > 0 ? `
-                        <div class="flex items-center text-[11px] text-slate-500 mt-2 pt-1.5 border-t border-slate-200/60">
+                        <div class="flex items-center text-[11px] text-slate-500 mt-2.5 pt-2 border-t border-slate-300">
                             ${detailsHtml}
                         </div>
                     ` : ''}
@@ -403,22 +419,22 @@ function renderRestaurantCard(restaurant) {
             `;
         }).join('');
 
-        return `<div class="mb-4 last:mb-0">${dayTitle}${itemsHtml}</div>`;
+        return `<div class="mb-5 last:mb-0">${dayTitle}${itemsHtml}</div>`;
     }).join('');
 
     return `
-        <article class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-            <header class="p-4 bg-slate-100 border-b border-slate-200 flex justify-between items-start">
+        <article class="bg-white rounded-2xl shadow-sm border-2 border-slate-300 overflow-hidden flex flex-col">
+            <header class="p-4 bg-slate-100 border-b-2 border-slate-300 flex justify-between items-start">
                 <div>
                     <h3 class="font-bold text-slate-900 text-lg">
                         <a href="${restaurant.url}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 transition-colors inline-flex items-center gap-1">
                             ${restaurant.name} ↗
                         </a>
                     </h3>
-                    <p class="text-xs text-slate-500 mt-1">Posledná aktualizácia: ${restaurant.lastUpdated}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Posledná aktualizácia: ${restaurant.lastUpdated}</p>
                 </div>
             </header>
-            <div class="p-4 flex-grow overflow-y-auto max-h-[520px]">
+            <div class="p-4 flex-grow overflow-y-auto max-h-[540px]">
                 ${menuContentHtml}
             </div>
         </article>
@@ -527,12 +543,10 @@ function parseOstravarna(htmlString) {
     $html.find('#menu article').each(function () {
         const $article = $(this);
         const dayHeader = $article.find('.tracking-wider').text().trim().toLowerCase();
-        
-        // Ignorujeme špeciály a víkendy, berieme iba pracovné dni
+
         const dayNum = dayNameMap[dayHeader];
         if (!dayNum) return;
 
-        // Ak je deň označený ako ZATVORENÉ
         if ($article.text().includes('ZATVORENÉ')) return;
 
         $article.find('.divide-y > div').each(function () {
@@ -544,21 +558,27 @@ function parseOstravarna(htmlString) {
             const $titleEl = $mainCol.find('.font-bold');
             if (!$titleEl.length) return;
 
-            let fullTitle = $titleEl.text().replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+            let fullText = $titleEl.text().replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
 
-            // Extrakcia hmotnosti/objemu (napr. 0,3l alebo 130g)
-            const weightSpan = $titleEl.find('span.text-zinc-300').text().trim();
-            let weightStr = weightSpan;
+            // Striktný regex na hmotnosť/objem (napr. "0,3l", "0,3 l", "130g", "580g", "250g", "300g", "150g")
+            const weightRegex = /(\d+(?:[\.,]\d+)?\s*(?:g|l))\b/i;
+            const weightMatch = fullText.match(weightRegex);
+            let weightStr = weightMatch ? weightMatch[1].trim() : '';
 
-            // Očistenie názvu jedla
-            let cleanName = fullTitle;
-            if (weightSpan) {
-                cleanName = cleanName.replace(weightSpan, '').trim();
-            }
-            // Odstránenie čísla položky na začiatku (napr. "1.", "2.")
+            // Čistenie názvu jedla
+            let cleanName = fullText;
+
+            // Odstránenie čísla položky (napr. "1.", "2.") na začiatku
             cleanName = cleanName.replace(/^\d+\.\s*/, '').trim();
 
-            // Typ položky a alergény z podriadku
+            // Odstránenie váhy z názvu jedla
+            if (weightMatch) {
+                cleanName = cleanName.replace(weightMatch[0], '').trim();
+            }
+
+            // Dodatočné začistenie prebytočných medzier
+            cleanName = cleanName.replace(/\s+/g, ' ').trim();
+
             const typeText = $mainCol.find('.mt-1').text() || '';
             const isSoup = typeText.includes('Polievka');
             const allergensMatch = typeText.match(/Alergény:\s*([\d,]+)/i);
