@@ -1,6 +1,5 @@
 /**
  * WEBTE1 - Zadanie č. 2: Obedové menu v okolí fakulty
- * Autor: Daniel Fischer
  * Client-side spracovanie menu s využitím knižnice jQuery v4.0
  */
 
@@ -12,9 +11,9 @@ $(function () {
 const PROXY_URL = ''; 
 
 // Kľúč keše pre automatické obnovenie dát v localStorage
-const CACHE_KEY = 'webte1_menu_cache_v13';
+const CACHE_KEY = 'webte1_menu_cache_v40';
 
-// Konfigurácia reštaurácií
+// Konfigurácia reštaurácií (Ostravarna Amélia nahradila Naše Hospoda)
 const RESTAURANTS = [
     {
         id: 'drag',
@@ -24,11 +23,11 @@ const RESTAURANTS = [
         parse: parseDrag
     },
     {
-        id: 'nase-hospoda',
-        name: 'Naše Hospoda Karloveská',
-        url: 'https://nasehospoda-karloveska.sk/#menu',
-        localUrl: 'data/Nase_hospoda.html',
-        parse: parseNaseHospoda
+        id: 'ostravarna',
+        name: 'Ostravarna Amélia',
+        url: 'https://ameliarestaurant.sk/#menu',
+        localUrl: 'data/Ostravarna.html',
+        parse: parseOstravarna
     },
     {
         id: 'riviera',
@@ -144,11 +143,11 @@ function saveToCache(data) {
 }
 
 function setupEventListeners() {
-    $('#btn-refresh').on('click', function () {
+    $('#btn-refresh').off('click').on('click', function () {
         loadAllRestaurantsData(true);
     });
 
-    $('#btn-clear-cache').on('click', function () {
+    $('#btn-clear-cache').off('click').on('click', function () {
         localStorage.removeItem(CACHE_KEY);
         state.restaurantsData = [];
         showLoading(false);
@@ -156,12 +155,12 @@ function setupEventListeners() {
         alert('Uložené dáta boli vymazané z localStorage.');
     });
 
-    $('#data-source-toggle').on('change', function () {
+    $('#data-source-toggle').off('change').on('change', function () {
         state.useLocalData = $(this).is(':checked');
         loadAllRestaurantsData(true);
     });
 
-    $('#day-tabs').on('click', '.day-tab', function () {
+    $('#day-tabs').off('click', '.day-tab').on('click', '.day-tab', function () {
         const dayVal = $(this).data('day');
         state.selectedDay = dayVal === 'all' ? 'all' : parseInt(dayVal, 10);
         updateTabsUI();
@@ -192,7 +191,7 @@ function renderFiltersUI() {
 
     $container.html(html);
 
-    $container.find('.restaurant-filter-btn').on('click', function () {
+    $container.find('.restaurant-filter-btn').off('click').on('click', function () {
         const restId = $(this).data('id');
         if (state.visibleRestaurants.has(restId)) {
             if (state.visibleRestaurants.size > 1) {
@@ -254,7 +253,7 @@ async function loadAllRestaurantsData(forceRefresh = false) {
                 url: restaurant.url,
                 lastUpdated: new Date().toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' }),
                 error: state.useLocalData 
-                    ? 'Nepodarilo sa načítať lokálny HTML súbor.' 
+                    ? `Nepodarilo sa načítať lokálny súbor (${restaurant.localUrl}).` 
                     : 'CORS proxy adresa nie je nastavená alebo je server nedostupný.',
                 menu: []
             };
@@ -303,7 +302,7 @@ function renderMenuUI() {
 }
 
 /**
- * Vykreslenie karty reštaurácie so samostatným riadkom pre odznak polievky a názvom pod ním
+ * Vykreslenie karty reštaurácie
  */
 function renderRestaurantCard(restaurant) {
     if (restaurant.error) {
@@ -367,7 +366,6 @@ function renderRestaurantCard(restaurant) {
         const itemsHtml = dayItems.map(item => {
             const isSoup = item.type === 'soup';
             
-            // Hrubšie obrysy (border-2) a odstup medzi kartami (my-3)
             const cardClass = isSoup 
                 ? 'p-3.5 bg-blue-50/60 rounded-xl border-2 border-blue-200 border-l-4 border-l-blue-600 my-3 shadow-xs' 
                 : 'p-3.5 bg-slate-50 rounded-xl border-2 border-slate-200 border-l-4 border-l-emerald-500 my-3 shadow-xs';
@@ -428,7 +426,7 @@ function renderRestaurantCard(restaurant) {
 }
 
 /* ==========================================================================
-   PARSER LOGIKA (Drag, Naše Hospoda, Riviera)
+   PARSER LOGIKA (Drag, Ostravarna Amélia, Riviera)
    ========================================================================== */
 
 function parseDrag(htmlString) {
@@ -510,7 +508,10 @@ function parseDrag(htmlString) {
     return menuItems;
 }
 
-function parseNaseHospoda(htmlString) {
+/**
+ * Parser pre Ostravarna Amélia
+ */
+function parseOstravarna(htmlString) {
     const doc = new DOMParser().parseFromString(htmlString, 'text/html');
     const $html = $(doc.body);
     const menuItems = [];
@@ -526,44 +527,47 @@ function parseNaseHospoda(htmlString) {
     $html.find('#menu article').each(function () {
         const $article = $(this);
         const dayHeader = $article.find('.tracking-wider').text().trim().toLowerCase();
-        const dateText = $article.find('.font-bold.text-white').text().trim() || '';
-
+        
+        // Ignorujeme špeciály a víkendy, berieme iba pracovné dni
         const dayNum = dayNameMap[dayHeader];
         if (!dayNum) return;
 
+        // Ak je deň označený ako ZATVORENÉ
+        if ($article.text().includes('ZATVORENÉ')) return;
+
         $article.find('.divide-y > div').each(function () {
             const $row = $(this);
-            const $priceEl = $row.find('.shrink-0');
+            const priceText = $row.find('.shrink-0').text().trim();
             const $mainCol = $row.find('.min-w-0');
             if (!$mainCol.length) return;
 
             const $titleEl = $mainCol.find('.font-bold');
-            const detailsText = $mainCol.find('.mt-1').text() || '';
-
             if (!$titleEl.length) return;
 
             let fullTitle = $titleEl.text().replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
 
-            const weightMatch = fullTitle.match(/^(\d+\s*g|\d+[\.,]\d+\s*l)\s*/i);
+            // Extrakcia hmotnosti/objemu (napr. 0,3l alebo 130g)
+            const weightSpan = $titleEl.find('span.text-zinc-300').text().trim();
+            let weightStr = weightSpan;
+
+            // Očistenie názvu jedla
             let cleanName = fullTitle;
-            let weightStr = '';
-
-            if (weightMatch) {
-                weightStr = weightMatch[1].trim();
-                cleanName = fullTitle.substring(weightMatch[0].length).trim();
-            } else {
-                cleanName = cleanName.replace(/^\d+\.\s*/, '').trim();
+            if (weightSpan) {
+                cleanName = cleanName.replace(weightSpan, '').trim();
             }
+            // Odstránenie čísla položky na začiatku (napr. "1.", "2.")
+            cleanName = cleanName.replace(/^\d+\.\s*/, '').trim();
 
-            const isSoup = detailsText.includes('Polievka');
-            const allergensMatch = detailsText.match(/Alergény:\s*([\d,]+)/i);
+            // Typ položky a alergény z podriadku
+            const typeText = $mainCol.find('.mt-1').text() || '';
+            const isSoup = typeText.includes('Polievka');
+            const allergensMatch = typeText.match(/Alergény:\s*([\d,]+)/i);
 
             menuItems.push({
                 day: dayNum,
-                date: dateText,
                 type: isSoup ? 'soup' : 'main',
                 name: cleanName,
-                price: formatPrice($priceEl.text(), isSoup),
+                price: formatPrice(priceText, isSoup),
                 allergens: cleanAllergens(allergensMatch ? allergensMatch[1] : ''),
                 weight: weightStr
             });
