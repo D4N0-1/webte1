@@ -2,7 +2,7 @@
 
 * **Meno:** Daniel Fischer  
 * **Krúžok:** B-API-MSUS  
-* **Odkaz na školskom serveri:** [https://webte1.fei.stuba.sk/~xfischerd/ZZ_fischer]
+* **Odkaz na školskom serveri:** [https://webte1.fei.stuba.sk/~xfischerd/Z2_fischer]
 * **Odkaz na GitHub repozitár:** [https://github.com/D4N0-1/webte1]
 
 Webová aplikácia určená na asynchrónne načítanie, spracovanie a prehľadné zobrazenie denného menu reštaurácií v okolí FEI STU v Bratislave. Spracovanie prebieha výhradne na strane klienta bez použitia serverového backendu.
@@ -29,7 +29,7 @@ Webová aplikácia určená na asynchrónne načítanie, spracovanie a prehľadn
 - `js/app.js` - Hlavná JS logika aplikácie v jQuery
 - `fonts/` - Priečinok pre lokálne `.woff2` súbory fontu Inter
 - `data/` - Priečinok pre lokálne HTML súbory reštaurácií (`Drag.html`, `Ostravarna.html`, `Riviera.html`)
-- `docs/` - Priečinok pre dokumentáciu a potvrdenia z W3C validátorov
+- `docs/` - Priečinok pre potvrdenia z W3C validátorov
 
 ## Použitie AI nástrojov
 V súlade s podmienkami zadania uvádzam použitie AI nástrojov pri vývoji:
