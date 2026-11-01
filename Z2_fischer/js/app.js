@@ -7,7 +7,7 @@ $(function () {
 });
 
 const PROXY_URL = ''; 
-const CACHE_KEY = 'menu_cache_v110';
+const CACHE_KEY = 'menu_cache';
 
 const RESTAURANTS = [
     { id: 'drag', name: 'Reštaurácia DRAG', url: 'https://www.restauracia-drag.sk/denne-menu', localUrl: 'data/Drag.html', parse: parseDrag },
@@ -155,9 +155,9 @@ async function loadAllRestaurantsData(forceRefresh = false) {
         try {
             const url = state.useLocalData ? r.localUrl : `${PROXY_URL}${r.url}`;
             const html = await $.ajax({ url, method: 'GET', dataType: 'html' });
-            return { id: r.id, name: r.name, url: r.url, lastUpdated: new Date().toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' }), error: null, menu: r.parse(html) };
+            return { id: r.id, name: r.name, url: r.url, lastUpdated: new Date().toLocaleString('sk-SK', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }), error: null, menu: r.parse(html) };
         } catch (e) {
-            return { id: r.id, name: r.name, url: r.url, lastUpdated: new Date().toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' }), error: 'Nepodarilo sa načítať dáta.', menu: [] };
+            return { id: r.id, name: r.name, url: r.url, lastUpdated: new Date().toLocaleString('sk-SK', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }), error: 'Nepodarilo sa načítať dáta.', menu: [] };
         }
     }));
 

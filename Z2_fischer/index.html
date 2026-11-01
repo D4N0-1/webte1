@@ -33,7 +33,7 @@
             <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 class="text-xl font-semibold text-slate-900">Vyberte si obedové menu</h2>
-                    <p class="text-sm text-slate-500">Zobrazenie pre: <time id="current-day-display" class="font-semibold text-blue-600">Dnes</time></p>
+                    <p class="text-sm text-slate-500">Zobrazenie pre: <span id="current-day-display" class="font-semibold text-blue-600">Dnes</span></p>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -79,12 +79,43 @@
             <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
-        <section id="about-section" class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200 space-y-4">
+        <!-- Sekcia O projekte -->
+        <section id="about-section" class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200 space-y-6">
             <h2 class="text-2xl font-bold text-slate-900 border-b border-slate-100 pb-3">O projekte</h2>
+            
             <p class="text-slate-600 leading-relaxed">
-                Tento webový projekt vznikol v rámci predmetu <strong>WEBTE1</strong> (ZS 2026/2027) na FEI STU v Bratislave. 
-                Slúži na asynchrónne sťahovanie, spracovanie a zobrazenie denných menu z vybraných reštaurácií v okolí fakulty.
+                Tento webový projekt vznikol ako zadanie č. 2 v rámci predmetu <strong>WEBTE1</strong> na FEI STU v Bratislave. 
+                Aplikácia slúži na prehľadné, asynchrónne zobrazenie denných obedových menu z vybraných reštaurácií v okolí fakulty.
             </p>
+
+            <!-- Zdrojové reštaurácie -->
+            <div class="space-y-2">
+                <h3 class="text-lg font-semibold text-slate-800">Zdrojové stránky dát</h3>
+                <ul class="list-disc list-inside text-sm text-slate-600 space-y-1">
+                    <li><strong class="text-slate-800">Reštaurácia DRAG:</strong> <a href="https://www.restauracia-drag.sk/denne-menu" target="_blank" rel="noopener" class="text-blue-600 hover:underline">restauracia-drag.sk</a></li>
+                    <li><strong class="text-slate-800">Ostravarna Amélia:</strong> <a href="https://ameliarestaurant.sk/#menu" target="_blank" rel="noopener" class="text-blue-600 hover:underline">ameliarestaurant.sk</a></li>
+                    <li><strong class="text-slate-800">Reštaurácia Riviera:</strong> <a href="https://restauraciariviera.sk/obedove-menu/" target="_blank" rel="noopener" class="text-blue-600 hover:underline">restauraciariviera.sk</a></li>
+                </ul>
+            </div>
+
+            <!-- Spôsob spracovania dát -->
+            <div class="space-y-2">
+                <h3 class="text-lg font-semibold text-slate-800">Spôsob spracovania dát</h3>
+                <ul class="list-disc list-inside text-sm text-slate-600 space-y-1">
+                    <li><strong>Asynchrónne načítanie:</strong> Dáta sa načítavajú asynchrónne cez AJAX (<code class="bg-slate-100 px-1 py-0.5 rounded text-xs">$.ajax</code>) – buď z lokálnych statických HTML súborov v priečinku <code class="bg-slate-100 px-1 py-0.5 rounded text-xs">data/</code>, alebo z URL adries cez CORS proxy.</li>
+                    <li><strong>Parsovanie HTML:</strong> Stiahnutý HTML dokument je bezpečne parsovaný pomocou natívneho <code class="bg-slate-100 px-1 py-0.5 rounded text-xs">DOMParser</code> rozhrania bez spúšťania externých skriptov a obrázkov.</li>
+                    <li><strong>Spracovanie pomocou REGEX:</strong> Pomocou regulárnych výrazov sa z textu izolujú názvy jedál, váhy, ceny v EUR a čísla alergénov.</li>
+                </ul>
+            </div>
+
+            <!-- Použité knižnice -->
+            <div class="space-y-2">
+                <h3 class="text-lg font-semibold text-slate-800">Použité knižnice a technológie</h3>
+                <ul class="list-disc list-inside text-sm text-slate-600 space-y-1">
+                    <li><strong>jQuery v4.0.0</strong></li>
+                    <li><strong>Tailwind CSS v4.3.3</strong></li>
+                </ul>
+            </div>
         </section>
 
     </main>
