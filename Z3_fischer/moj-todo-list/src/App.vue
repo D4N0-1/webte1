@@ -7,6 +7,7 @@ import AppFooter from '@/components/AppFooter.vue';
 import StudentIdModal from '@/components/StudentIdModal.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
+import TodoFilters from '@/components/TodoFilters.vue';
 import TodoList from '@/components/TodoList.vue';
 
 const {
@@ -31,9 +32,55 @@ const isFormModalOpen = ref(false);
 const isResetModalOpen = ref(false);
 const todoToDelete = ref(null);
 
+// Filter and sort state for the task list
+const statusFilter = ref('all');
+const searchQuery = ref('');
+const sortBy = ref('date_from_asc');
+
 const isDeletingSelected = computed(() =>
   todoToDelete.value ? isTodoPending(todoToDelete.value.id) : false
 );
+
+// Task counts per status category
+const statusCounts = computed(() => {
+  const completed = todos.value.filter((todo) => todo.is_finished).length;
+  return {
+    all: todos.value.length,
+    active: todos.value.length - completed,
+    completed,
+  };
+});
+
+// Derived filtered and sorted list (keeps original `todos` intact for the calendar)
+const filteredTodos = computed(() => {
+  const normalizedQuery = searchQuery.value.trim().toLowerCase();
+
+  const filtered = todos.value.filter((todo) => {
+    if (statusFilter.value === 'active' && todo.is_finished) return false;
+    if (statusFilter.value === 'completed' && !todo.is_finished) return false;
+
+    if (normalizedQuery && !todo.title.toLowerCase().includes(normalizedQuery)) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const [field, direction] = sortBy.value.split('_date_').length === 2
+    ? [sortBy.value.startsWith('date_from') ? 'date_from' : 'date_to', sortBy.value.endsWith('asc') ? 1 : -1]
+    : [sortBy.value.startsWith('date_from') ? 'date_from' : 'date_to', sortBy.value.endsWith('asc') ? 1 : -1];
+
+  return [...filtered].sort((a, b) => {
+    const timeA = new Date(a[field]).getTime();
+    const timeB = new Date(b[field]).getTime();
+    return (timeA - timeB) * direction;
+  });
+});
+
+function resetFilters() {
+  statusFilter.value = 'all';
+  searchQuery.value = '';
+}
 
 onMounted(() => {
   if (hasStudentName.value) {
@@ -94,8 +141,17 @@ async function handleDeleteConfirm() {
 
       <template v-else>
         <section v-if="activeTab === 'list'" aria-label="Zoznam úloh">
+          <TodoFilters
+            v-if="todos.length > 0"
+            v-model:status-filter="statusFilter"
+            v-model:search-query="searchQuery"
+            v-model:sort-by="sortBy"
+            :counts="statusCounts"
+            @reset-filters="resetFilters"
+          />
+
           <TodoList
-            :todos="todos"
+            :todos="filteredTodos"
             :total-count="todos.length"
             :is-todo-pending="isTodoPending"
             :fetch-error="fetchError"
@@ -151,7 +207,7 @@ async function handleDeleteConfirm() {
     <ConfirmModal
       :is-open="Boolean(todoToDelete)"
       title="Odstrániť úlohu"
-      :message="`Naozaj chcete natrvalo odstrániť úlohu „${todoToDelete?.title || ''}“?`"
+      message="Naozaj chcete natrvalo odstrániť úlohu „${todoToDelete?.title || ''}“?"
       confirm-text="Odstrániť"
       variant="danger"
       :is-submitting="isDeletingSelected"
