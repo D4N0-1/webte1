@@ -10,6 +10,7 @@ import ConfirmModal from '@/components/ConfirmModal.vue';
 import TodoFilters from '@/components/TodoFilters.vue';
 import TodoList from '@/components/TodoList.vue';
 import TodoFormModal from '@/components/TodoFormModal.vue';
+import TodoCalendar from '@/components/TodoCalendar.vue';
 
 const {
   studentName,
@@ -196,12 +197,10 @@ async function handleDeleteConfirm() {
           />
         </section>
 
-        <section v-else-if="activeTab === 'calendar'" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h2 class="text-lg font-bold text-slate-800">Kalendár úloh</h2>
-          <p class="text-sm text-slate-500 mt-1">
-            Zobrazenie kalendára FullCalendar bude integrované v Kroku 11.
-          </p>
-        </section>
+        <TodoCalendar
+          v-else-if="activeTab === 'calendar'"
+          :todos="todos"
+        />
 
         <section v-else-if="activeTab === 'about'" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
           <h2 class="text-lg font-bold text-slate-800">O projekte</h2>

@@ -70,7 +70,7 @@ const formattedInterval = computed(() =>
           <!-- Title and status badges -->
           <div class="flex flex-wrap items-center gap-2">
             <h3
-              class="text-base font-bold break-words"
+              class="text-base font-bold wrap-break-words"
               :class="
                 todo.is_finished
                   ? 'line-through text-slate-500'
@@ -105,7 +105,7 @@ const formattedInterval = computed(() =>
           <!-- Optional description (rendered safely as plain text) -->
           <p
             v-if="todo.description"
-            class="mt-1.5 text-sm leading-relaxed whitespace-pre-line break-words"
+            class="mt-1.5 text-sm leading-relaxed whitespace-pre-line wrap-break-words"
             :class="todo.is_finished ? 'text-slate-400' : 'text-slate-600'"
           >
             {{ todo.description }}
