@@ -110,7 +110,7 @@ const calendarOptions = computed(() => ({
     </div>
 
     <!-- FullCalendar container -->
-    <div class="min-h-[650px]">
+    <div class="min-h-162.5">
       <FullCalendar :options="calendarOptions" />
     </div>
   </section>

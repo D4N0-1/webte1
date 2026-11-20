@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useTodos } from '@/composables/useTodos';
+import { toDateTimeLocalValue } from '@/utils/dateUtils';
 import AppHeader from '@/components/AppHeader.vue';
 import AppNavbar from '@/components/AppNavbar.vue';
 import AppFooter from '@/components/AppFooter.vue';
@@ -11,6 +12,7 @@ import TodoFilters from '@/components/TodoFilters.vue';
 import TodoList from '@/components/TodoList.vue';
 import TodoFormModal from '@/components/TodoFormModal.vue';
 import TodoCalendar from '@/components/TodoCalendar.vue';
+import TodoDetailModal from '@/components/TodoDetailModal.vue';
 
 const {
   studentName,
@@ -37,12 +39,24 @@ const isFormModalOpen = ref(false);
 const isResetModalOpen = ref(false);
 const todoToEdit = ref(null);
 const todoToDelete = ref(null);
+const selectedCalendarTodoId = ref(null);
 const initialFormRange = ref(null);
 
 // Filter and sort state for the task list
 const statusFilter = ref('all');
 const searchQuery = ref('');
 const sortBy = ref('date_from_asc');
+
+// Keep detail modal reactive to state changes (e.g., toggling completion status)
+const selectedCalendarTodo = computed(() =>
+  selectedCalendarTodoId.value !== null
+    ? todos.value.find((item) => item.id === selectedCalendarTodoId.value) || null
+    : null
+);
+
+const isSelectedDetailPending = computed(() =>
+  selectedCalendarTodo.value ? isTodoPending(selectedCalendarTodo.value.id) : false
+);
 
 const isDeletingSelected = computed(() =>
   todoToDelete.value ? isTodoPending(todoToDelete.value.id) : false
@@ -95,6 +109,7 @@ function openCreateModal(range = null) {
 }
 
 function openEditModal(todo) {
+  selectedCalendarTodoId.value = null;
   todoToEdit.value = todo;
   initialFormRange.value = null;
   isFormModalOpen.value = true;
@@ -104,6 +119,32 @@ function closeFormModal() {
   isFormModalOpen.value = false;
   todoToEdit.value = null;
   initialFormRange.value = null;
+}
+
+function handleCalendarSelectTodo(todo) {
+  selectedCalendarTodoId.value = todo.id;
+}
+
+function handleCalendarSelectRange({ startStr, endStr }) {
+  // Month view returns date-only string (e.g. "2026-11-25") -> prefill 09:00 to 10:00
+  if (startStr && !startStr.includes('T')) {
+    openCreateModal({
+      date_from: `${startStr}T09:00`,
+      date_to: `${startStr}T10:00`,
+    });
+    return;
+  }
+
+  // Week/day timeGrid view returns ISO datetime strings
+  openCreateModal({
+    date_from: toDateTimeLocalValue(startStr),
+    date_to: toDateTimeLocalValue(endStr),
+  });
+}
+
+function handleDetailDelete(todo) {
+  selectedCalendarTodoId.value = null;
+  todoToDelete.value = todo;
 }
 
 onMounted(() => {
@@ -200,6 +241,8 @@ async function handleDeleteConfirm() {
         <TodoCalendar
           v-else-if="activeTab === 'calendar'"
           :todos="todos"
+          @select-todo="handleCalendarSelectTodo"
+          @select-range="handleCalendarSelectRange"
         />
 
         <section v-else-if="activeTab === 'about'" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -222,6 +265,16 @@ async function handleDeleteConfirm() {
       :api-error="fetchError"
       @submit="handleStudentSubmit"
       @close="isStudentModalOpen = false"
+    />
+
+    <!-- Task detail modal opened from calendar event click -->
+    <TodoDetailModal
+      :todo="selectedCalendarTodo"
+      :is-pending="isSelectedDetailPending"
+      @close="selectedCalendarTodoId = null"
+      @toggle-status="toggleTodoStatus"
+      @edit="openEditModal"
+      @delete="handleDetailDelete"
     />
 
     <!-- Create / Edit todo modal -->
