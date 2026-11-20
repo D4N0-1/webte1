@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* Základné prispôsobenie FullCalendar tak, aby ladil s Tailwind dizajnom */
 .fc {
   --fc-border-color: #e2e8f0;
   --fc-button-bg-color: #2563eb;

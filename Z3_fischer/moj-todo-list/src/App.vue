@@ -1,5 +1,4 @@
 <script setup>
-// Hlavný komponent aplikácie - logiku doplníme v ďalších krokoch
 </script>
 
 <template>
