@@ -4,12 +4,15 @@ import { useTodos } from '@/composables/useTodos';
 import AppHeader from '@/components/AppHeader.vue';
 import AppNavbar from '@/components/AppNavbar.vue';
 import AppFooter from '@/components/AppFooter.vue';
+import StudentIdModal from '@/components/StudentIdModal.vue';
 
 const {
   studentName,
   hasStudentName,
   todos,
   isLoading,
+  fetchError,
+  setStudentName,
   fetchTodos,
 } = useTodos();
 
@@ -25,6 +28,13 @@ onMounted(() => {
     isStudentModalOpen.value = true;
   }
 });
+
+async function handleStudentSubmit(newName) {
+  const success = await setStudentName(newName);
+  if (success) {
+    isStudentModalOpen.value = false;
+  }
+}
 </script>
 
 <template>
@@ -67,5 +77,15 @@ onMounted(() => {
     </main>
 
     <AppFooter />
+
+    <StudentIdModal
+      :is-open="isStudentModalOpen"
+      :current-name="studentName"
+      :is-submitting="isLoading"
+      :can-close="hasStudentName"
+      :api-error="fetchError"
+      @submit="handleStudentSubmit"
+      @close="isStudentModalOpen = false"
+    />
   </div>
 </template>

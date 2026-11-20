@@ -15,6 +15,15 @@ const toast = ref(null);
 let toastTimeoutId = null;
 
 /**
+ * Extracts the todos array from the API user response object ({ id, name, created_at, todos: [...] }).
+ */
+function extractTodosList(data) {
+  if (Array.isArray(data?.todos)) return data.todos;
+  if (Array.isArray(data)) return data;
+  return [];
+}
+
+/**
  * Displays a temporary feedback notification banner to the user.
  */
 function showToast(message, type = 'success', duration = 3500) {
@@ -85,7 +94,7 @@ export function useTodos() {
 
     try {
       const data = await todoApi.getTodos(studentName.value);
-      todos.value = Array.isArray(data) ? data : [];
+      todos.value = extractTodosList(data);
       return true;
     } catch (error) {
       fetchError.value = error.message || 'Nepodarilo sa načítať úlohy zo servera.';
@@ -218,11 +227,7 @@ export function useTodos() {
     fetchError.value = '';
     try {
       const data = await todoApi.resetTodos(studentName.value);
-      if (Array.isArray(data)) {
-        todos.value = data;
-      } else {
-        await fetchTodos({ silent: true });
-      }
+      todos.value = extractTodosList(data);
       showToast('Ukážkové úlohy boli úspešne obnovené.', 'success');
       return true;
     } catch (error) {
