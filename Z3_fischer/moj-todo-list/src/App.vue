@@ -9,18 +9,22 @@ import ToastNotification from '@/components/ToastNotification.vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import TodoFilters from '@/components/TodoFilters.vue';
 import TodoList from '@/components/TodoList.vue';
+import TodoFormModal from '@/components/TodoFormModal.vue';
 
 const {
   studentName,
   hasStudentName,
   todos,
   isLoading,
+  isSubmitting,
   fetchError,
   toast,
   isTodoPending,
   dismissToast,
   setStudentName,
   fetchTodos,
+  addTodo,
+  editTodo,
   toggleTodoStatus,
   removeTodo,
   resetSampleTodos,
@@ -30,7 +34,9 @@ const activeTab = ref('list');
 const isStudentModalOpen = ref(false);
 const isFormModalOpen = ref(false);
 const isResetModalOpen = ref(false);
+const todoToEdit = ref(null);
 const todoToDelete = ref(null);
+const initialFormRange = ref(null);
 
 // Filter and sort state for the task list
 const statusFilter = ref('all');
@@ -66,9 +72,8 @@ const filteredTodos = computed(() => {
     return true;
   });
 
-  const [field, direction] = sortBy.value.split('_date_').length === 2
-    ? [sortBy.value.startsWith('date_from') ? 'date_from' : 'date_to', sortBy.value.endsWith('asc') ? 1 : -1]
-    : [sortBy.value.startsWith('date_from') ? 'date_from' : 'date_to', sortBy.value.endsWith('asc') ? 1 : -1];
+  const field = sortBy.value.startsWith('date_from') ? 'date_from' : 'date_to';
+  const direction = sortBy.value.endsWith('asc') ? 1 : -1;
 
   return [...filtered].sort((a, b) => {
     const timeA = new Date(a[field]).getTime();
@@ -80,6 +85,24 @@ const filteredTodos = computed(() => {
 function resetFilters() {
   statusFilter.value = 'all';
   searchQuery.value = '';
+}
+
+function openCreateModal(range = null) {
+  todoToEdit.value = null;
+  initialFormRange.value = range;
+  isFormModalOpen.value = true;
+}
+
+function openEditModal(todo) {
+  todoToEdit.value = todo;
+  initialFormRange.value = null;
+  isFormModalOpen.value = true;
+}
+
+function closeFormModal() {
+  isFormModalOpen.value = false;
+  todoToEdit.value = null;
+  initialFormRange.value = null;
 }
 
 onMounted(() => {
@@ -94,6 +117,16 @@ async function handleStudentSubmit(newName) {
   const success = await setStudentName(newName);
   if (success) {
     isStudentModalOpen.value = false;
+  }
+}
+
+async function handleFormSubmit({ payload, todoId }) {
+  const result = todoId
+    ? await editTodo(todoId, payload)
+    : await addTodo(payload);
+
+  if (result) {
+    closeFormModal();
   }
 }
 
@@ -119,7 +152,7 @@ async function handleDeleteConfirm() {
       :student-name="studentName"
       :is-loading="isLoading"
       @change-student="isStudentModalOpen = true"
-      @create-todo="isFormModalOpen = true"
+      @create-todo="openCreateModal()"
       @reset-todos="isResetModalOpen = true"
     />
 
@@ -156,8 +189,9 @@ async function handleDeleteConfirm() {
             :is-todo-pending="isTodoPending"
             :fetch-error="fetchError"
             @toggle-status="toggleTodoStatus"
+            @edit="openEditModal"
             @delete="todoToDelete = $event"
-            @create-todo="isFormModalOpen = true"
+            @create-todo="openCreateModal()"
             @retry-fetch="fetchTodos"
           />
         </section>
@@ -191,6 +225,16 @@ async function handleDeleteConfirm() {
       @close="isStudentModalOpen = false"
     />
 
+    <!-- Create / Edit todo modal -->
+    <TodoFormModal
+      :is-open="isFormModalOpen"
+      :todo-to-edit="todoToEdit"
+      :initial-range="initialFormRange"
+      :is-submitting="isSubmitting"
+      @submit="handleFormSubmit"
+      @close="closeFormModal"
+    />
+
     <!-- Reset sample tasks confirmation -->
     <ConfirmModal
       :is-open="isResetModalOpen"
@@ -207,7 +251,7 @@ async function handleDeleteConfirm() {
     <ConfirmModal
       :is-open="Boolean(todoToDelete)"
       title="Odstrániť úlohu"
-      message="Naozaj chcete natrvalo odstrániť úlohu „${todoToDelete?.title || ''}“?"
+      :message="`Naozaj chcete natrvalo odstrániť úlohu „${todoToDelete?.title || ''}“?`"
       confirm-text="Odstrániť"
       variant="danger"
       :is-submitting="isDeletingSelected"
