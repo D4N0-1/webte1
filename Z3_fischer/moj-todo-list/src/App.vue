@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useTodos } from '@/composables/useTodos';
 import AppHeader from '@/components/AppHeader.vue';
 import AppNavbar from '@/components/AppNavbar.vue';
@@ -7,6 +7,7 @@ import AppFooter from '@/components/AppFooter.vue';
 import StudentIdModal from '@/components/StudentIdModal.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
+import TodoList from '@/components/TodoList.vue';
 
 const {
   studentName,
@@ -15,9 +16,12 @@ const {
   isLoading,
   fetchError,
   toast,
+  isTodoPending,
   dismissToast,
   setStudentName,
   fetchTodos,
+  toggleTodoStatus,
+  removeTodo,
   resetSampleTodos,
 } = useTodos();
 
@@ -25,6 +29,11 @@ const activeTab = ref('list');
 const isStudentModalOpen = ref(false);
 const isFormModalOpen = ref(false);
 const isResetModalOpen = ref(false);
+const todoToDelete = ref(null);
+
+const isDeletingSelected = computed(() =>
+  todoToDelete.value ? isTodoPending(todoToDelete.value.id) : false
+);
 
 onMounted(() => {
   if (hasStudentName.value) {
@@ -45,6 +54,14 @@ async function handleResetConfirm() {
   const success = await resetSampleTodos();
   if (success) {
     isResetModalOpen.value = false;
+  }
+}
+
+async function handleDeleteConfirm() {
+  if (!todoToDelete.value) return;
+  const success = await removeTodo(todoToDelete.value.id);
+  if (success) {
+    todoToDelete.value = null;
   }
 }
 </script>
@@ -76,11 +93,17 @@ async function handleResetConfirm() {
       </div>
 
       <template v-else>
-        <section v-if="activeTab === 'list'" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h2 class="text-lg font-bold text-slate-800">Zoznam úloh</h2>
-          <p class="text-sm text-slate-500 mt-1">
-            Počet načítaných úloh: {{ todos.length }} (komponent zoznamu bude doplnený v ďalšom kroku).
-          </p>
+        <section v-if="activeTab === 'list'" aria-label="Zoznam úloh">
+          <TodoList
+            :todos="todos"
+            :total-count="todos.length"
+            :is-todo-pending="isTodoPending"
+            :fetch-error="fetchError"
+            @toggle-status="toggleTodoStatus"
+            @delete="todoToDelete = $event"
+            @create-todo="isFormModalOpen = true"
+            @retry-fetch="fetchTodos"
+          />
         </section>
 
         <section v-else-if="activeTab === 'calendar'" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -112,6 +135,7 @@ async function handleResetConfirm() {
       @close="isStudentModalOpen = false"
     />
 
+    <!-- Reset sample tasks confirmation -->
     <ConfirmModal
       :is-open="isResetModalOpen"
       title="Obnoviť ukážkové úlohy"
@@ -121,6 +145,18 @@ async function handleResetConfirm() {
       :is-submitting="isLoading"
       @confirm="handleResetConfirm"
       @close="isResetModalOpen = false"
+    />
+
+    <!-- Delete single task confirmation -->
+    <ConfirmModal
+      :is-open="Boolean(todoToDelete)"
+      title="Odstrániť úlohu"
+      :message="`Naozaj chcete natrvalo odstrániť úlohu „${todoToDelete?.title || ''}“?`"
+      confirm-text="Odstrániť"
+      variant="danger"
+      :is-submitting="isDeletingSelected"
+      @confirm="handleDeleteConfirm"
+      @close="todoToDelete = null"
     />
 
     <ToastNotification :toast="toast" @dismiss="dismissToast" />
