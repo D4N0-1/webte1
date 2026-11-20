@@ -72,7 +72,7 @@ function handleClose() {
         <div>
           <h2
             id="todo-detail-modal-title"
-            class="text-lg font-bold break-words"
+            class="text-lg font-bold wrap-break-word"
             :class="todo.is_finished ? 'line-through text-slate-500' : 'text-slate-900'"
           >
             {{ todo.title }}
@@ -106,7 +106,7 @@ function handleClose() {
           </p>
           <p
             v-if="todo.description"
-            class="text-sm text-slate-700 leading-relaxed whitespace-pre-line break-words"
+            class="text-sm text-slate-700 leading-relaxed whitespace-pre-line wrap-break-word"
           >
             {{ todo.description }}
           </p>
