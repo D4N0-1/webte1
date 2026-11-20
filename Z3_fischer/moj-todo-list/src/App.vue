@@ -13,6 +13,7 @@ import TodoList from '@/components/TodoList.vue';
 import TodoFormModal from '@/components/TodoFormModal.vue';
 import TodoCalendar from '@/components/TodoCalendar.vue';
 import TodoDetailModal from '@/components/TodoDetailModal.vue';
+import AboutSection from '@/components/AboutSection.vue';
 
 const {
   studentName,
@@ -245,13 +246,10 @@ async function handleDeleteConfirm() {
           @select-range="handleCalendarSelectRange"
         />
 
-        <section v-else-if="activeTab === 'about'" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h2 class="text-lg font-bold text-slate-800">O projekte</h2>
-          <p class="text-sm text-slate-600 mt-2 leading-relaxed">
-            Webová aplikácia <strong>Môj TODO List</strong> slúži na správu osobných úloh prepojenú s REST API
-            a interaktívnym kalendárom.
-          </p>
-        </section>
+        <AboutSection
+          v-else-if="activeTab === 'about'"
+          :student-name="studentName"
+        />
       </template>
     </main>
 
