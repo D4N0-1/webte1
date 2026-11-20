@@ -115,8 +115,9 @@ export function useTodos() {
 
     isSubmitting.value = true;
     try {
+      const hadMaxTodos = todos.value.length >= 50;
       const createdTodo = await todoApi.createTodo(studentName.value, todoPayload);
-      if (createdTodo && createdTodo.id !== undefined) {
+      if (!hadMaxTodos && createdTodo && createdTodo.id !== undefined) {
         todos.value = [...todos.value, createdTodo];
       } else {
         await fetchTodos({ silent: true });

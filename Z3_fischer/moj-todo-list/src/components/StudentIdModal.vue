@@ -52,8 +52,8 @@ function handleSubmit() {
     return;
   }
 
-  if (trimmed.length > 50) {
-    validationError.value = 'Identifikátor môže mať maximálne 50 znakov.';
+  if (trimmed.length > 100) {
+    validationError.value = 'Identifikátor môže mať maximálne 100 znakov.';
     return;
   }
 
@@ -112,7 +112,7 @@ function handleBackdropClick() {
             ref="inputRef"
             v-model="inputName"
             type="text"
-            maxlength="50"
+            maxlength="100"
             placeholder="napr. xfischer"
             :disabled="isSubmitting"
             class="w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-colors disabled:bg-slate-100"

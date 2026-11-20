@@ -49,6 +49,9 @@ async function request(url, options = {}) {
   if (!response.ok) {
     let errorMessage = `Chyba servera (HTTP ${response.status})`;
 
+    if (response.status === 403) {
+      throw new Error('Zadaný identifikátor študenta nie je v zozname povolených používateľov (HTTP 403).');
+    }
     if (data?.detail) {
       if (typeof data.detail === 'string') {
         errorMessage = data.detail;
