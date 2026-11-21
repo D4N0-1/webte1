@@ -91,7 +91,7 @@ function handleClose() {
             "
             @click="emit('confirm')"
           >
-            {{ isSubmitting ? 'Spracúvam...' : confirmText }}
+            {{ isSubmitting ? 'Aktualizujem...' : confirmText }}
           </button>
         </div>
       </div>
