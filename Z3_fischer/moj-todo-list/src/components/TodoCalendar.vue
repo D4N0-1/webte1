@@ -62,13 +62,6 @@ function escapeHtml(text) {
     .replace(/"/g, '&quot;');
 }
 
-// Force immediate re-render when any task status, title, or date changes
-const calendarRenderKey = computed(() =>
-  props.todos
-    .map((t) => `${t.id}:${t.is_finished ? 1 : 0}:${t.date_from}:${t.date_to}:${t.title}`)
-    .join('|')
-);
-
 // Map reactive todo items into FullCalendar event objects
 const calendarEvents = computed(() =>
   props.todos.map((todo) => {
@@ -131,6 +124,14 @@ const calendarOptions = computed(() => ({
       emit('select-todo', selectedTodo);
     }
   },
+  dateClick(info) {
+    if (info.view.type === 'dayGridMonth' && info.dateStr) {
+      emit('select-range', {
+        startStr: info.dateStr,
+        endStr: info.dateStr,
+      });
+    }
+  },
   select(selectionInfo) {
     emit('select-range', {
       startStr: selectionInfo.startStr,
@@ -170,7 +171,7 @@ const calendarOptions = computed(() => ({
 
     <!-- FullCalendar container -->
     <div class="min-h-162.5">
-      <FullCalendar :key="calendarRenderKey" :options="calendarOptions" />
+      <FullCalendar :options="calendarOptions" />
     </div>
   </section>
 </template>
