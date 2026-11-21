@@ -126,12 +126,30 @@ function handleCalendarSelectTodo(todo) {
   selectedCalendarTodoId.value = todo.id;
 }
 
+function subtractOneDayStr(dateOnlyStr) {
+  const [year, month, day] = dateOnlyStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() - 1);
+
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 function handleCalendarSelectRange({ startStr, endStr }) {
-  // Month view returns date-only string (e.g. "2026-11-25") -> prefill 09:00 to 10:00
+  // Month view returns date-only strings (e.g. startStr: "2026-11-21", endStr: "2026-11-24")
   if (startStr && !startStr.includes('T')) {
+    let resolvedEndDate = startStr;
+
+    if (endStr && !endStr.includes('T') && endStr > startStr) {
+      const adjustedEnd = subtractOneDayStr(endStr);
+      resolvedEndDate = adjustedEnd >= startStr ? adjustedEnd : startStr;
+    }
+
     openCreateModal({
       date_from: `${startStr}T09:00`,
-      date_to: `${startStr}T10:00`,
+      date_to: `${resolvedEndDate}T10:00`,
     });
     return;
   }
