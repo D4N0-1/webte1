@@ -70,37 +70,6 @@ const endpoints = [
       </div>
     </div>
 
-    <!-- REST API Overview -->
-    <div>
-      <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">
-        Implementované REST API koncové body
-      </h3>
-      <div class="overflow-x-auto rounded-lg border border-slate-200">
-        <table class="w-full text-left border-collapse text-xs sm:text-sm">
-          <thead>
-            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
-              <th class="py-2.5 px-3.5 font-semibold">Metóda</th>
-              <th class="py-2.5 px-3.5 font-semibold">Endpoint</th>
-              <th class="py-2.5 px-3.5 font-semibold">Účel</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="ep in endpoints" :key="ep.method + ep.path">
-              <td class="py-2.5 px-3.5 font-mono font-bold text-blue-700 whitespace-nowrap">
-                {{ ep.method }}
-              </td>
-              <td class="py-2.5 px-3.5 font-mono text-slate-700 whitespace-nowrap">
-                {{ ep.path }}
-              </td>
-              <td class="py-2.5 px-3.5 text-slate-600">
-                {{ ep.label }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- Key Features & Security -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
       <div class="rounded-lg border border-slate-200/80 p-4 space-y-2">

@@ -2,9 +2,9 @@
 import { computed } from 'vue';
 import FullCalendar from '@fullcalendar/vue3';
 import '@fullcalendar/vue3/skeleton.css';
-import '@fullcalendar/vue3/themes/classic/theme.css';
-import '@fullcalendar/vue3/themes/classic/palette.css';
-import classicTheme from '@fullcalendar/vue3/themes/classic';
+import '@fullcalendar/vue3/themes/monarch/theme.css';
+import '@fullcalendar/vue3/themes/monarch/palettes/blue.css';
+import monarchTheme from '@fullcalendar/vue3/themes/monarch';
 import dayGridPlugin from '@fullcalendar/vue3/daygrid';
 import timeGridPlugin from '@fullcalendar/vue3/timegrid';
 import interactionPlugin from '@fullcalendar/vue3/interaction';
@@ -53,7 +53,7 @@ const calendarEvents = computed(() =>
 );
 
 const calendarOptions = computed(() => ({
-  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, classicTheme],
+  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, monarchTheme],
   initialView: 'dayGridMonth',
   locale: skLocale,
   firstDay: 1,
@@ -89,17 +89,17 @@ const calendarOptions = computed(() => ({
   >
     <!-- Color legend and usage hint -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-      <div class="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-600">
-        <span class="inline-flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded-xs bg-blue-600 inline-block"></span>
-          Aktívna úloha
+      <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200/70">
+          <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+          Aktívna
         </span>
-        <span class="inline-flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded-xs bg-red-600 inline-block"></span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200/70">
+          <span class="w-2 h-2 rounded-full bg-red-600"></span>
           Po termíne
         </span>
-        <span class="inline-flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded-xs bg-emerald-600 inline-block"></span>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+          <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
           Dokončená
         </span>
       </div>
