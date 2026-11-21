@@ -310,9 +310,14 @@ function handleClose() {
 
         <!-- Completion status toggle (shown when editing an existing todo) -->
         <div v-if="isEditMode" class="pt-1">
-          <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+          <label
+            for="todo-is-finished-input"
+            class="inline-flex items-center gap-2.5 cursor-pointer select-none"
+          >
             <input
+              id="todo-is-finished-input"
               v-model="form.is_finished"
+              name="is_finished"
               type="checkbox"
               :disabled="isSubmitting"
               class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600/30 cursor-pointer"

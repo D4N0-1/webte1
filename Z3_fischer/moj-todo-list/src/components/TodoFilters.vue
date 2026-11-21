@@ -95,13 +95,13 @@ const hasActiveFilters = computed(
             />
           </svg>
           <input
-            :value="searchQuery"
+            id="todo-search-input"
+            name="search"
             type="search"
             aria-label="Vyhľadať úlohu podľa názvu"
             placeholder="Hľadať podľa názvu..."
             class="w-full pl-9 pr-8 py-2 rounded-lg border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
-            @input="emit('update:searchQuery', $event.target.value)"
-          />
+          >
           <button
             v-if="searchQuery"
             type="button"
